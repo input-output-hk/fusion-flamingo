@@ -4,3 +4,9 @@
 [submodule "cardano-cli"]
 	path = cardano-cli
 	url = git@github.com:input-output-hk/cardano-cli.git
+[submodule "cardano-node"]
+	path = cardano-node
+	url = git@github.com:input-output-hk/cardano-node.git
+[submodule "cardano-dev"]
+	path = cardano-dev
+	url = git@github.com:input-output-hk/cardano-dev.git
