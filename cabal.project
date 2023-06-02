@@ -1,4 +1,4 @@
--- Custom repository for cardano haskell packages, see CONTRIBUTING for more
+
 repository cardano-haskell-packages
   url: https://input-output-hk.github.io/cardano-haskell-packages
   secure: True
@@ -10,28 +10,73 @@ repository cardano-haskell-packages
     c00aae8461a256275598500ea0e187588c35a5d5d7454fb57eac18d9edb86a56
     d4a35cd3121aa00d18544bb0ac01c3e1691d618f462c46129271bccf39f7e8ee
 
--- See CONTRIBUTING for information about these, including some Nix commands
--- you need to run if you change them
 index-state:
-  , hackage.haskell.org 2023-08-06T23:58:58Z
-  , cardano-haskell-packages 2023-10-06T00:47:56Z
+  , hackage.haskell.org 2023-11-09T23:50:15Z
+  , cardano-haskell-packages 2023-11-30T13:34:51Z
 
 packages:
-    cardano-api/cardano-api
-    cardano-api/cardano-api-gen
-    cardano-cli/cardano-cli
-    hedgehog-extras
+  -- cardano-node/*/*.cabal
+  -- cardano-node/cardano-node/cardano-node.cabal
+  -- cardano-node/cardano-testnet/cardano-testnet.cabal
+  cardano-cli/*/*.cabal
+  cardano-api/*/*.cabal
+  -- bech32/*/*.cabal
 
-package cardano-api
-  ghc-options: -Werror
+  -- from: git@github.com:input-output-hk/hedgehog-extras.git
+  -- hedgehog-extras/*.cabal
 
-package cardano-api-gen
-  ghc-options: -Werror
+  -- from: git@github.com:input-output-hk/ouroboros-network.git
+  -- ouroboros-network/cardano-ping/*.cabal
+  -- ouroboros-network/network-mux/*.cabal
 
-package cryptonite
-  -- Using RDRAND instead of /dev/urandom as an entropy source for key
-  -- generation is dubious. Set the flag so we use /dev/urandom by default.
-  flags: -support_rdrand
+  -- from: git@github.com:input-output-hk/ouroboros-consensus.git
+  -- ouroboros-consensus/*/*.cabal
+
+  -- from: git@github.com:input-output-hk/cardano-ledger.git
+  -- cardano-ledger/eras/allegra/impl
+  -- cardano-ledger/eras/alonzo/impl
+  -- cardano-ledger/eras/alonzo/test-suite
+  -- cardano-ledger/eras/babbage/impl
+  -- cardano-ledger/eras/babbage/test-suite
+  -- cardano-ledger/eras/byron/chain/executable-spec
+  -- cardano-ledger/eras/byron/crypto
+  -- cardano-ledger/eras/byron/crypto/test
+  -- cardano-ledger/eras/byron/ledger/executable-spec
+  -- cardano-ledger/eras/byron/ledger/impl
+  -- cardano-ledger/eras/byron/ledger/impl/test
+  -- cardano-ledger/eras/conway/impl
+  -- cardano-ledger/eras/conway/test-suite
+  -- cardano-ledger/eras/mary/impl
+  -- cardano-ledger/eras/shelley-ma/test-suite
+  -- cardano-ledger/eras/shelley/impl
+  -- cardano-ledger/eras/shelley/test-suite
+  -- cardano-ledger/libs/cardano-data
+  -- cardano-ledger/libs/cardano-ledger-api
+  -- cardano-ledger/libs/cardano-ledger-binary
+  -- cardano-ledger/libs/cardano-ledger-core
+  -- cardano-ledger/libs/cardano-ledger-pretty
+  -- cardano-ledger/libs/cardano-ledger-test
+  -- cardano-ledger/libs/cardano-protocol-tpraos
+  -- cardano-ledger/libs/ledger-state
+  -- cardano-ledger/libs/non-integral
+  -- cardano-ledger/libs/plutus-preprocessor
+  -- cardano-ledger/libs/set-algebra
+  -- cardano-ledger/libs/small-steps-test
+  -- cardano-ledger/libs/small-steps
+  -- cardano-ledger/libs/vector-map
+
+  -- from: git@github.com:input-output-hk/cardano-base.git
+  -- cardano-base/cardano-crypto-class/*.cabal
+  -- cardano-base/cardano-crypto-praos/*.cabal
+  -- cardano-base/cardano-crypto-tests/*.cabal
+  -- cardano-base/cardano-mempool/*.cabal
+
+  -- ******
+  -- beware of repos with multiple cabal projects with different release cadence
+  -- these may render the project unbuildable when including all cabal projects here
+  -- for example that's the case for ouroboros-network
+  -- ******
+
 
 tests: True
 
@@ -40,11 +85,29 @@ test-show-details: direct
 -- Always write GHC env files, because they are needed for ghci.
 write-ghc-environment-files: always
 
-allow-newer: text
+package *
+  ghc-options: -Wwarn
+
+-- package cardano-api
+--   ghc-options: -fdefer-type-errors
+
+package cryptonite
+  -- Using RDRAND instead of /dev/urandom as an entropy source for key
+  -- generation is dubious. Set the flag so we use /dev/urandom by default.
+  flags: -support_rdrand
+
+package snap-server
+  flags: +openssl
+
+package cardano-crypto-praos
+  flags: -external-libsodium-vrf
+
+allow-newer:
+  , base
+  , ghc-prim
+  , text
 
 constraints:
   dependent-sum-template < 0.1.2
 
--- IMPORTANT
--- Do NOT add more source-repository-package stanzas here unless they are strictly
--- temporary! Please read the section in CONTRIBUTING about updating dependencies.
+
