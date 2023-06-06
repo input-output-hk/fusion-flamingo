@@ -1,6 +1,8 @@
 [submodule "cardano-api"]
 	path = cardano-api
 	url = git@github.com:input-output-hk/cardano-api.git
+	branch = newhoggy/use-tag-script-from-cardano-dev-instead
 [submodule "cardano-cli"]
 	path = cardano-cli
 	url = git@github.com:input-output-hk/cardano-cli.git
+	branch = main
