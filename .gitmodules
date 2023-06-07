@@ -1,6 +1,8 @@
 [submodule "cardano-api"]
 	path = cardano-api
 	url = git@github.com:input-output-hk/cardano-api.git
+	branch = main
 [submodule "cardano-cli"]
 	path = cardano-cli
 	url = git@github.com:input-output-hk/cardano-cli.git
+	branch = main
