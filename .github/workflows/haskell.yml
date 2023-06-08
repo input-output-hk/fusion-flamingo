@@ -14,10 +14,6 @@ jobs:
         ghc: ["8.10.7", "9.2.8"]
         cabal: ["3.10.1.0"]
         os: [ubuntu-latest, macos-latest, windows-latest]
-        exclude:
-          # Excluding due to a possible filename too long issue on Windows
-          - os: windows-latest
-            ghc: "9.2.8"
 
     env:
       # Modify this value to "invalidate" the cabal cache.
