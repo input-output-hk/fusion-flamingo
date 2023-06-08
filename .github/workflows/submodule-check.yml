@@ -21,4 +21,4 @@ jobs:
     - name: Check submodules
       env:
         GH_TOKEN: ${{ github.token }}
-      run: ./scripts/require-submodules-on-main-branch.sh
+      run: ./scripts/ci/require-submodules-on-main-branch.sh
