@@ -48,13 +48,6 @@ jobs:
 
     - name: Cabal update
       run: cabal update
-  
-    - name: Configure build
-      shell: bash
-      run: |
-        cp ".github/workflows/cabal.project.local.ci.$(uname -s)" cabal.project.local
-        echo "# cabal.project.local"
-        cat cabal.project.local
 
     - name: Build dry run
       run: cabal build all --dry-run --minimize-conflict-set
