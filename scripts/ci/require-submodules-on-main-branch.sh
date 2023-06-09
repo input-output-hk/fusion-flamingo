@@ -1,6 +1,12 @@
 #!/usr/bin/env bash
+#
+# This script checks that all submodules are on the main branch when the main branch of the repository is main.
+#
+# The script exits with a non-zero exit code if any submodules are not on the main branch.
 
+# TODO: Use this initialisation of main_branch once the repository is made public
 # main_branch=$(gh repo view --json defaultBranchRef | jq -r .defaultBranchRef.name)
+
 main_branch=main
 mismatches=0
 toplevel="$(git rev-parse --show-toplevel)"
