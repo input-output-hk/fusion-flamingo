@@ -18,7 +18,14 @@ jobs:
       with:
         submodules: true
 
-    - name: Check submodules
+    - # Only PRs where all the submodules are on the main branch of their respective repositories
+      # are allowed to merge to main.
+      #
+      # The script can be run locally to confirm that the submodules are on the main branch.
+      #
+      # Note, the main branch of submodule repositories have a name other than "main".
+      # For example: "master" or "develop".
+      name: Check submodules
       env:
         GH_TOKEN: ${{ github.token }}
       run: ./scripts/ci/require-submodules-on-main-branch.sh
