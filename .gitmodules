@@ -1,11 +1,11 @@
 [submodule "cardano-api"]
 	path = cardano-api
 	url = git@github.com:input-output-hk/cardano-api.git
-	branch = newhoggy/new-Expr-module
+	branch = newhoggy/remove-queryNodeLocalState
 [submodule "cardano-cli"]
 	path = cardano-cli
 	url = git@github.com:input-output-hk/cardano-cli.git
-	branch = newhoggy/new-Expr-module
+	branch = newhoggy/remove-queryNodeLocalState
 [submodule "cardano-dev"]
 	path = cardano-dev
 	url = git@github.com:input-output-hk/cardano-dev.git
