@@ -1,11 +1,11 @@
 [submodule "cardano-api"]
 	path = cardano-api
 	url = git@github.com:input-output-hk/cardano-api.git
-	branch = main
+	branch = newhoggy/cardano-api-8.5.2.0.x/parameterise-certificate-by-era
 [submodule "cardano-cli"]
 	path = cardano-cli
 	url = git@github.com:input-output-hk/cardano-cli.git
-	branch = main
+	branch = newhoggy/parameterise-certificate-by-era
 [submodule "cardano-dev"]
 	path = cardano-dev
 	url = git@github.com:input-output-hk/cardano-dev.git
