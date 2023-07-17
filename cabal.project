@@ -20,12 +20,27 @@ packages:
     cardano-api/cardano-api
     cardano-api/cardano-api-gen
     cardano-cli/cardano-cli
+    cardano-node/cardano-node
+    cardano-node/cardano-submit-api
+    cardano-node/cardano-testnet
     hedgehog-extras
 
 package cardano-api
   ghc-options: -Werror
 
 package cardano-api-gen
+  ghc-options: -Werror
+
+package cardano-cli
+  ghc-options: -Werror
+
+package cardano-node
+  ghc-options: -Werror
+
+package cardano-submit-api
+  ghc-options: -Werror
+
+package cardano-testnet
   ghc-options: -Werror
 
 package cryptonite

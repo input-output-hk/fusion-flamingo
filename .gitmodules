@@ -14,3 +14,7 @@
 	path = hedgehog-extras
 	url = git@github.com:input-output-hk/hedgehog-extras.git
 	branch = main
+[submodule "cardano-node"]
+	path = cardano-node
+	url = git@github.com:input-output-hk/cardano-node.git
+	branch = master
