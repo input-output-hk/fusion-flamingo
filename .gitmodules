@@ -5,7 +5,7 @@
 [submodule "cardano-cli"]
 	path = cardano-cli
 	url = git@github.com:input-output-hk/cardano-cli.git
-	branch = main
+	branch = newhoggy/update-to-cardano-api-8.13.0.0
 [submodule "cardano-dev"]
 	path = cardano-dev
 	url = git@github.com:input-output-hk/cardano-dev.git
