@@ -1,0 +1,9 @@
+cardano-api
+cardano-cli
+cardano-base
+cardano-ledger
+cardano-node
+ouroboros-consensus
+ouroboros-network
+plutus
+plutus-apps
