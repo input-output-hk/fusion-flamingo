@@ -1,6 +1,6 @@
 
 repository cardano-haskell-packages
-  url: https://input-output-hk.github.io/cardano-haskell-packages
+  url: https://chap.intersectmbo.org/
   secure: True
   root-keys:
     3e0cce471cf09815f930210f7827266fd09045445d65923e6d0238a6cd15126f
@@ -11,15 +11,17 @@ repository cardano-haskell-packages
     d4a35cd3121aa00d18544bb0ac01c3e1691d618f462c46129271bccf39f7e8ee
 
 index-state:
-  , hackage.haskell.org 2023-11-09T23:50:15Z
-  , cardano-haskell-packages 2023-11-30T13:34:51Z
+  , hackage.haskell.org 2024-02-26T14:10:20Z
+  , cardano-haskell-packages 2024-02-26T15:17:38Z
 
 packages:
-  -- cardano-node/*/*.cabal
-  -- cardano-node/cardano-node/cardano-node.cabal
-  -- cardano-node/cardano-testnet/cardano-testnet.cabal
-  cardano-cli/*/*.cabal
-  cardano-api/*/*.cabal
+  cardano-node/*/*.cabal
+  cardano-node/bench/cardano-topology
+  cardano-node/bench/locli
+  cardano-node/bench/plutus-scripts-bench
+  cardano-node/bench/tx-generator
+  -- cardano-cli/*/*.cabal
+  -- cardano-api/*/*.cabal
   -- bech32/*/*.cabal
 
   -- from: git@github.com:input-output-hk/hedgehog-extras.git
@@ -108,6 +110,6 @@ allow-newer:
   , text
 
 constraints:
-  dependent-sum-template < 0.1.2
-
+    dependent-sum-template < 0.1.2
+  , cardano-api < 8.39.2
 

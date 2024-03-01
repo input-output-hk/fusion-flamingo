@@ -1,9 +1,7 @@
 cardano-api
 cardano-cli
-cardano-base
 cardano-ledger
 cardano-node
+hedgehog-extras
 ouroboros-consensus
 ouroboros-network
-plutus
-plutus-apps
