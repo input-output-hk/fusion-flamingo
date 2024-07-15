@@ -5,3 +5,5 @@ cardano-node
 hedgehog-extras
 ouroboros-consensus
 ouroboros-network
+cardano-base
+plutus
