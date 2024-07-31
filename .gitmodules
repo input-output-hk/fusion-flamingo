@@ -17,3 +17,6 @@
 [submodule "cardano-node"]
 	path = cardano-node
 	url = git@github.com:IntersectMBO/cardano-node.git
+[submodule "cardano-ledger"]
+	path = cardano-ledger
+	url = https://github.com/IntersectMBO/cardano-ledger.git

@@ -19,6 +19,7 @@
 !inotifywait.sh
 
 # cardano projects
+!cardano-ledger
 !cardano-dev
 !cardano-api
 !cardano-cli
