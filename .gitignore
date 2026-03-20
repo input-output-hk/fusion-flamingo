@@ -6,6 +6,7 @@
 
 !.gitignore
 !.gitmodules
+!.github
 !README.md
 !LICENSE
 
@@ -17,6 +18,8 @@
 !CODEOWNERS
 !haskdogs-dirs.txt
 !inotifywait.sh
+!AGENTS.md
+!CLAUDE.md
 
 # cardano projects
 !cardano-dev

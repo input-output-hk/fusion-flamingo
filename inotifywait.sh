@@ -4,7 +4,7 @@
 colour_stdout() {
   if command -v lolcat > /dev/null 2>&1; then
     while IFS= read -r line; do
-      echo "⚡ $line" | lolcat -a
+      echo "⚡ $line" | lolcat
     done
   else
     while IFS= read -r line; do
