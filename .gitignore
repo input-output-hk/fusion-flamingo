@@ -12,6 +12,8 @@
 
 # metaproject configuration files
 !.envrc
+!flake.nix
+!flake.lock
 !cabal.project
 !cabal.project.local
 !hie.yaml
