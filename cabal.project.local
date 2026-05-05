@@ -5,7 +5,7 @@ optimization: False
 test-show-details: direct
 
 program-options
-  ghc-options: -fobject-code -freverse-errors -Wwarn -Wunused-packages
+  ghc-options: -j4 -fobject-code -freverse-errors -Wwarn -Wunused-packages
 
 package cardano-crypto-praos
   flags: -external-libsodium-vrf

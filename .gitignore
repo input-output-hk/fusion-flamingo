@@ -20,6 +20,7 @@
 !CODEOWNERS
 !haskdogs-dirs.txt
 !inotifywait.sh
+!update-haskdogs-repos.sh
 !AGENTS.md
 !CLAUDE.md
 

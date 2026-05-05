@@ -23,19 +23,27 @@
       pkgs = cardano-api.legacyPackages.${system}.nixpkgs;
       cardanoApiShell = cardano-api.legacyPackages.${system}.cabalProject.shell;
     in {
-      default = pkgs.mkShell {
-        # Inherit all tools, GHC, and libraries from cardano-api's shell
-        inputsFrom = [cardanoApiShell];
+      default =
+        pkgs.mkShell {
+          # Inherit all tools, GHC, and libraries from cardano-api's shell
+          inputsFrom = [cardanoApiShell];
 
-        # Extra packages needed for cardano-node and other projects
-        packages =
-          [
-            pkgs.lmdb
-          ]
-          ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [
-            pkgs.systemdLibs
-          ];
-      };
+          # Extra packages needed for cardano-node and other projects
+          packages =
+            [
+              pkgs.lmdb
+            ]
+            ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [
+              pkgs.systemdLibs
+              pkgs.glibcLocales
+              pkgs.inotify-tools
+            ];
+
+          LANG = "C.UTF-8";
+        }
+        // pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
+          LOCALE_ARCHIVE = "${pkgs.glibcLocales}/lib/locale/locale-archive";
+        };
     });
 
     formatter =

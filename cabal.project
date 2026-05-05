@@ -11,30 +11,32 @@ repository cardano-haskell-packages
     d4a35cd3121aa00d18544bb0ac01c3e1691d618f462c46129271bccf39f7e8ee
 
 index-state:
-  , hackage.haskell.org 2026-03-30T06:20:04Z
-  , cardano-haskell-packages 2026-04-09T12:05:18Z
+  , hackage.haskell.org 2026-04-17T09:20:55Z
+  , cardano-haskell-packages 2026-04-15T11:20:53Z
 
 packages:
   -- adawallet/*/*.cabal
 
-  cardano-node/cardano-testnet/cardano-testnet.cabal
-  cardano-node/cardano-node-chairman/cardano-node-chairman.cabal
-  cardano-node/cardano-node-capi/cardano-node-capi.cabal
-  cardano-node/cardano-node/cardano-node.cabal
-  cardano-node/cardano-submit-api/cardano-submit-api.cabal
-  cardano-node/cardano-tracer/cardano-tracer.cabal
-  cardano-node/trace-forward/trace-forward.cabal
-  cardano-node/trace-resources/trace-resources.cabal
-  cardano-node/bench/cardano-profile
-  cardano-node/bench/cardano-topology
-  cardano-node/bench/locli
-  cardano-node/bench/plutus-scripts-bench
-  cardano-node/bench/tx-generator
+  -- cardano-node/cardano-testnet/cardano-testnet.cabal
+  -- cardano-node/cardano-node-chairman/cardano-node-chairman.cabal
+  -- cardano-node/cardano-node-capi/cardano-node-capi.cabal
+  -- cardano-node/cardano-node/cardano-node.cabal
+  -- cardano-node/cardano-submit-api/cardano-submit-api.cabal
+  -- cardano-node/cardano-tracer/cardano-tracer.cabal
+  -- cardano-node/trace-forward/trace-forward.cabal
+  -- cardano-node/trace-resources/trace-resources.cabal
+  -- cardano-node/bench/cardano-profile
+  -- cardano-node/bench/cardano-topology
+  -- cardano-node/bench/locli
+  -- cardano-node/bench/plutus-scripts-bench
+  -- cardano-node/bench/tx-generator
+  -- cardano-node/bench/cardano-recon-framework
+  -- cardano-node/bench/cardano-timeseries-io
 
-  -- cardano-api/cardano-api/*.cabal
-  -- cardano-api/cardano-api-gen/*.cabal
-  -- cardano-api/cardano-wasm/*.cabal
-  -- cardano-api/cardano-rpc/*.cabal
+  cardano-api/cardano-api/*.cabal
+  cardano-api/cardano-api-gen/*.cabal
+  cardano-api/cardano-wasm/*.cabal
+  cardano-api/cardano-rpc/*.cabal
 
   -- cardano-cli/*/*.cabal
 
@@ -84,19 +86,6 @@ packages:
   -- cardano-base/cardano-crypto-praos/*.cabal
   -- cardano-base/cardano-crypto-tests/*.cabal
   -- cardano-base/cardano-mempool/*.cabal
-
-  proto-lens/discrimination-ieee754/
-  proto-lens/proto-lens-arbitrary
-  proto-lens/proto-lens-benchmarks
-  proto-lens/proto-lens-discrimination
-  proto-lens/proto-lens-optparse
-  proto-lens/proto-lens-protobuf-types
-  proto-lens/proto-lens-protoc
-  proto-lens/proto-lens-runtime
-  proto-lens/proto-lens-setup
-  proto-lens/proto-lens-tests
-  proto-lens/proto-lens-tests-dep
-  proto-lens/proto-lens
 
   -- ghc-source-gen/
 
@@ -168,8 +157,6 @@ if impl(ghc >= 9.12)
     -- , cardano-cli
 
     -- , hedgehog-extras
-
-max-backjumps: 50000
 
 extra-packages: Cabal
 

@@ -6,4 +6,5 @@ hedgehog-extras
 ouroboros-consensus
 ouroboros-network
 cardano-base
+hermod-tracing
 plutus
