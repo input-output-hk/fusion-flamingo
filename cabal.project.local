@@ -11,6 +11,6 @@ package cardano-crypto-praos
   flags: -external-libsodium-vrf
 
 -- with-compiler: ghc-9.10
-with-compiler: ghc-9.12.2
+with-compiler: ghc-9.12.4
 -- with-compiler: ghc-9.14.1
 

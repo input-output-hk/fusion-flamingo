@@ -41,77 +41,16 @@
   Run `nix develop` from the submodule's main checkout instead, then `cd` into the worktree.
 - Minimise nix build round-trips: verify types, imports, and constraints carefully before building.
 - Always include a `--sha256:` comment on `source-repository-package` stanzas - nix requires it for reproducible fetching.
-- **cardano-node nix attribute paths** use slashes, not colons.
-  Tests: `tests/cardano-testnet/cardano-testnet-test`, `checks/cardano-testnet-10.2.0-inplace-cardano-testnet-test/cardano-testnet-test`.
-  Libraries: `cardano-testnet`, `cardano-node`, `cardano-cli`.
-  Example: `nix build 'path:.#tests/cardano-testnet/cardano-testnet-test' --allow-import-from-derivation --accept-flake-config`.
-
-# cardano-rpc patterns
-- Never manually edit generated code (e.g. proto-lens output in `gen/`).
-  Use nix dev shell to run code generation tools (e.g. `nix develop --command bash -c "cd cardano-rpc && buf generate proto"`).
-- `Proto msg` is a grapesy newtype wrapper.
-  Internal functions should use plain proto-lens types, not `Proto`-wrapped.
-  Use `getProto`/`fmap getProto` only at the RPC handler boundary.
-- RIO hides many Prelude functions.
-  `sortBy` is NOT re-exported by RIO - import from `Data.List`.
-  Check RIO re-exports before assuming standard functions are in scope.
-- RIO's `^.` works with proto-lens van Laarhoven lenses.
-  No need for `lens-family` dependency.
-- Use `toList` (from `GHC.IsList`) instead of deprecated `valueToList` for `Value`.
-- Prefer backtick-infix sections over lambdas (e.g. `` (`f` y) `` not `\x -> f x y`).
-  hlint catches this.
-
-# Haskell style
-- Use readable value names, not acronyms: `shelleyBasedEra` not `sbe`, `policy` not `pid`, `network` not `nw`, `credential` not `cred`, `address` not `addr`, `value` not `val`, `tokenName` not `aname`, `quantity` not `qty`.
-- Don't create trivial one-liner helpers that just wrap `defMessage & lens .~ value` - inline them at call sites.
-- Use `OverloadedLists` and list literals instead of deprecated `valueFromList`.
-- Check that type constraints are actually needed before adding them.
-- **Always add Haddock comments over function parameters** when writing Haddock documentation.
-  Use the `-- ^` syntax on each parameter to describe its purpose.
-- **Always use `do` instead of `let ... in`.**
-  Write `do { let x = ...; expr }` not `let x = ... in expr`.
-- **Always prefer `$` over `()`** for function application.
-  Write `f $ g x` not `f (g x)`.
-- **Prefer dots over multiple dollars** in function application chains.
-  Write `f . g . h $ u v` not `f $ g $ h $ u v`.
-- **No staircase pattern.** Never nest `case ... of Just/Nothing` producing rightward drift.
-  Use `MaybeT` + `Alternative` (`<|>`) to flatten sequential `IO (Maybe a)` fallbacks:
-  ```haskell
-  -- WRONG (staircase):
-  do x <- action1
-     case x of
-       Just v -> pure v
-       Nothing -> do y <- action2
-                     case y of ...
-  -- RIGHT:
-  fromMaybe fallback <$> runMaybeT
-    (  MaybeT action1
-   <|> MaybeT action2
-   <|> MaybeT action3
-    )
-  ```
-  For pure `Maybe` chains without `IO`, use plain `<|>` on `Maybe` (its `Alternative` instance).
-- **Never use `BlockArguments`** extension.
-- **Never use `putStrLn`** in library code - use `Data.Text.IO.hPutStrLn stdout` for `Text` output (`say` is not available in RIO 0.1.24.0).
-- **Never modify `fourmolu.yaml`**, hlint rules, or cabal gild rules unless explicitly asked.
-- In Hedgehog tests, use `H.nothingFail` from hedgehog-extras instead of `case ... Nothing -> H.failure; Just x -> do`.
-  Import convention: `import Hedgehog as H` + `import Hedgehog.Extras qualified as H`.
-- In Hedgehog tests, use `H.leftFail` / `H.leftFailM` from hedgehog-extras instead of `case ... Left err -> H.annotateShow err >> H.failure; Right x -> do`.
-  Only applies to success cases where any `Left` is unexpected; keep the explicit `case` when specific `Left` patterns are valid outcomes.
-- In Hedgehog tests, never use `H.assert` - always use `H.assertWith` from hedgehog-extras.
-  `assertWith v (p -> Bool)` reports the value on failure via `noteShow_`, subsuming a separate `H.annotate`.
-- Use `H.propertyOnce` (from hedgehog-extras) instead of `H.property` for tests with no generators (`forAll`) - i.e., unit tests with fixed data.
-- In `retryUntilJustM`, match the guard condition to the expected postcondition exactly.
-  A weaker guard (e.g. `> 0` when the assertion expects `=== 2`) causes the retry to exit early and the assertion to fail.
+- **cardano-node nix attribute paths** live under `hydraJobs`, not top-level packages.
+  Use `nix build 'path:.#hydraJobs.native.<target>'` for native builds.
+  Top-level categories: `native`, `musl`, `windows`, `cardano-deployment`, `required`, `nonrequired`.
+  Attribute paths within categories use slashes, not colons.
+  Tests: `hydraJobs.native.tests/cardano-testnet/cardano-testnet-test`, `hydraJobs.native.checks/cardano-testnet-11.0.0-inplace-cardano-testnet-test/cardano-testnet-test`.
+  Libraries: `hydraJobs.native.cardano-testnet`, `hydraJobs.native.cardano-node`, `hydraJobs.native.cardano-cli`.
+  Other targets: `hydraJobs.native.gen-plutus`, `hydraJobs.native.calibrate-script`, `hydraJobs.native.tx-generator`.
+  Example: `nix build 'path:.#hydraJobs.native.gen-plutus' --allow-import-from-derivation --accept-flake-config`.
 
 # Output style
-- **Never use em dashes** (U+2014) in any output - code, documents, markdown, or prose.
-  Use hyphens (`-`), commas, colons, semicolons, or parentheses instead.
-- **One sentence per line in markdown files.**
-  Never put multiple sentences on the same line.
-  This keeps diffs clean - a change to one sentence does not touch adjacent sentences.
-- **Always use British English** in all output - code comments, documentation, markdown, prose.
-  E.g. "behaviour" not "behavior", "standardise" not "standardize", "favour" not "favor", "serialisation" not "serialization".
 - **Never wrap description text in changelog fragments.**
   Keep the entire description on a single line after `description: |` regardless of length.
   The YAML literal block scalar preserves line breaks, so wrapping introduces unwanted newlines.
