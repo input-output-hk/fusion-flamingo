@@ -23,6 +23,7 @@
 !update-haskdogs-repos.sh
 !AGENTS.md
 !CLAUDE.md
+!.claude/
 
 # cardano projects
 !cardano-dev

@@ -1,0 +1,27 @@
+{
+  "model": "claude-opus-4-6",
+  "permissions": {
+    "allow": [
+      "Bash(cabal build:*)",
+      "Bash(git remote:*)",
+      "Bash(git rev-parse:*)",
+      "Bash(ls:*)",
+      "Bash(nix-prefetch-git:*)",
+      "Bash(nix hash to-sri:*)",
+      "Bash(readlink:*)",
+      "Bash(ghc:*)",
+      "Bash(ghc-pkg list:*)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "Bash(git log:*)",
+      "Bash(read f:*)",
+      "Bash(nix build:*)",
+      "Bash(echo:*)",
+      "Bash(nix eval:*)",
+      "Bash(/nix/store/i2jq9516gi8w3k0r6rzila411wp59rjm-cardano-rpc-test-cardano-rpc-test-10.0.0.0/bin/cardano-rpc-test:*)"
+    ]
+  },
+  "enabledPlugins": {
+    "hls@claude-hls": true
+  }
+}
