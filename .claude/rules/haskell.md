@@ -71,3 +71,4 @@ paths:
 - Use `H.propertyOnce` (from hedgehog-extras) instead of `H.property` for tests with no generators (`forAll`) - i.e., unit tests with fixed data.
 - In `retryUntilJustM`, match the guard condition to the expected postcondition exactly.
   A weaker guard (e.g. `> 0` when the assertion expects `=== 2`) causes the retry to exit early and the assertion to fail.
+- Prefer `GHC.IsList` (`GHC.Exts`) `toList`/`fromList` over specialised container versions (e.g. `Set.fromList`, `Data.Foldable.toList`).
