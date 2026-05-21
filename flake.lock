@@ -3,11 +3,11 @@
     "CHaP": {
       "flake": false,
       "locked": {
-        "lastModified": 1776254461,
-        "narHash": "sha256-kB2azmnVPcQ4pFBvXCc3iKlMuoLsaPRbVP0LfD5j2Zg=",
+        "lastModified": 1779260980,
+        "narHash": "sha256-5SvJkobPmCtSYKwQWu1M/iFXj3g1PDy2bMJ9g1vm/No=",
         "owner": "intersectmbo",
         "repo": "cardano-haskell-packages",
-        "rev": "d8156d61840f90f0721c396f0598652f7aaf402a",
+        "rev": "4b6a661aa6463529c0ab0207567d62f85a6b899c",
         "type": "github"
       },
       "original": {
@@ -173,11 +173,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1778762370,
-        "narHash": "sha256-pD/BCIVDZwJKqV2FVUuRNyyxiJ9nd0TNXrr9vXRr0sc=",
-        "ref": "refs/heads/mgalazyn/refactor/move-evaltx-to-api",
-        "rev": "49e25c09149f2c4e30d9236de73b65f9fef1f8c0",
-        "revCount": 10434,
+        "lastModified": 1779348714,
+        "narHash": "sha256-suy6InXq2h3za09xsxZ+cH4rBDoF+OqtG080yfcKyM0=",
+        "ref": "refs/heads/mgalazyn/feature/bump-plutus-ledger-api",
+        "rev": "3cf4d6d40943ffae459e0e7122efa4f8a41cfa0d",
+        "revCount": 10456,
         "type": "git",
         "url": "file:./cardano-api"
       },

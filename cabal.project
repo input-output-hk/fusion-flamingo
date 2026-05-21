@@ -12,26 +12,26 @@ repository cardano-haskell-packages
 
 index-state:
   , hackage.haskell.org 2026-04-17T09:20:55Z
-  , cardano-haskell-packages 2026-05-05T04:28:05Z
+  , cardano-haskell-packages 2026-05-20T06:15:42Z
 
 packages:
   -- adawallet/*/*.cabal
 
-  -- cardano-node/cardano-testnet/cardano-testnet.cabal
-  -- cardano-node/cardano-node-chairman/cardano-node-chairman.cabal
-  -- cardano-node/cardano-node-capi/cardano-node-capi.cabal
-  -- cardano-node/cardano-node/cardano-node.cabal
-  -- cardano-node/cardano-submit-api/cardano-submit-api.cabal
-  -- cardano-node/cardano-tracer/cardano-tracer.cabal
-  -- cardano-node/trace-forward/trace-forward.cabal
-  -- cardano-node/trace-resources/trace-resources.cabal
-  -- cardano-node/bench/cardano-profile
-  -- cardano-node/bench/cardano-topology
-  -- cardano-node/bench/locli
-  -- cardano-node/bench/plutus-scripts-bench
-  -- cardano-node/bench/tx-generator
-  -- cardano-node/bench/cardano-recon-framework
-  -- cardano-node/bench/cardano-timeseries-io
+  cardano-node/cardano-testnet/cardano-testnet.cabal
+  cardano-node/cardano-node-chairman/cardano-node-chairman.cabal
+  cardano-node/cardano-node-capi/cardano-node-capi.cabal
+  cardano-node/cardano-node/cardano-node.cabal
+  cardano-node/cardano-submit-api/cardano-submit-api.cabal
+  cardano-node/cardano-tracer/cardano-tracer.cabal
+  cardano-node/trace-forward/trace-forward.cabal
+  cardano-node/trace-resources/trace-resources.cabal
+  cardano-node/bench/cardano-profile
+  cardano-node/bench/cardano-topology
+  cardano-node/bench/locli
+  cardano-node/bench/plutus-scripts-bench
+  cardano-node/bench/tx-generator
+  cardano-node/bench/cardano-recon-framework
+  cardano-node/bench/cardano-timeseries-io
 
   cardano-api/cardano-api/*.cabal
   cardano-api/cardano-api-gen/*.cabal

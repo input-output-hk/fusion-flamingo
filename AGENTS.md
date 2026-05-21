@@ -6,14 +6,15 @@
      (host configs, services, modules, flake inputs, etc.) lives in the code. -->
 
 # Rules for AI agents
+- NEVER assume the default branch is called `main`.
+  Check via `git symbolic-ref refs/remotes/origin/HEAD` or `git remote show origin | grep 'HEAD branch'` before targeting it for PRs, rebases, or diffs.
+  Use `gh api repos/OWNER/REPO --jq '.default_branch'` when SSH is unavailable.
 - When you discover a surprising gotcha, easy-to-make mistake, or non-obvious fact about this project, add it to this file (AGENTS.md) - NOT to private memory.
   This file is the shared knowledge base for the project.
 - Keep all git remotes using SSH (e.g. `git@github.com:org/repo.git`), never HTTPS.
   Never add HTTPS remotes as a workaround when SSH fails - ask the user to fix SSH access instead.
   Use `gh api` for read-only GitHub queries (PRs, comments, etc.) when SSH is unavailable.
 - Do NOT push to any remote - always ask the user for confirmation first.
-- NEVER assume the default branch is called `main`.
-  Check via `git symbolic-ref refs/remotes/origin/HEAD` or `git remote show origin | grep 'HEAD branch'` before targeting it for PRs, rebases, or diffs.
 
 # Directory structure
 - This project directory contains git submodules.
@@ -26,6 +27,10 @@
 - **Always create worktrees on a branch**, never detached HEAD.
   Use `git worktree add -b <branch> <path> <start-point>` to create a local branch tracking the remote.
   Never use `git worktree add <path> <remote-ref>` without `-b` - it creates a detached HEAD.
+- **Fix worktree gitdir paths to be relative** after creating a worktree in a submodule.
+  Git writes absolute paths in both the worktree's `.git` file and the back-reference in `.git/modules/<submodule>/worktrees/<name>/gitdir`.
+  Absolute paths break when `/work/.git` is a gitfile (submodule mount).
+  Rewrite both to relative paths after creation.
 
 # Nix gotchas
 - `nix build path:.` in a git worktree only sees **committed or staged** files (nix detects `.git` and filters via git).
@@ -40,7 +45,9 @@
 - `nix develop` fails inside a git worktree of a submodule - nix tries to open `.git/modules/<submodule>/@worktree/<name>/` which doesn't exist.
   Run `nix develop` from the submodule's main checkout instead, then `cd` into the worktree.
 - Minimise nix build round-trips: verify types, imports, and constraints carefully before building.
-- Always include a `--sha256:` comment on `source-repository-package` stanzas - nix requires it for reproducible fetching.
+- **Always include a correct `--sha256:` hash** on `source-repository-package` stanzas - nix requires it for reproducible fetching.
+  NEVER use placeholders like `sha256-PLACEHOLDER`. Compute the real hash before reporting the work as done.
+  Use `nix-prefetch-git --quiet <url> --rev <tag> | jq -r '.sha256'` then `nix hash to-sri --type sha256 <hash>`.
 - **cardano-node nix attribute paths** live under `hydraJobs`, not top-level packages.
   Use `nix build 'path:.#hydraJobs.native.<target>'` for native builds.
   Top-level categories: `native`, `musl`, `windows`, `cardano-deployment`, `required`, `nonrequired`.
