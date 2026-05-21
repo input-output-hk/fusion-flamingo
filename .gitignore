@@ -20,8 +20,11 @@
 !CODEOWNERS
 !haskdogs-dirs.txt
 !inotifywait.sh
-!update-haskdogs-repos.sh
+!regenerate-tags.sh
 !AGENTS.md
 !CLAUDE.md
 !.claude/
+!.claude/**
+!.serena/
+!.serena/**
 

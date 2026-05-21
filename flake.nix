@@ -3,15 +3,18 @@
 
   inputs = {
     cardano-api.url = "git+file:./cardano-api";
+    haskdogs-src = {
+      url = "github:carbolymer/haskdogs/feature/read-dump";
+      flake = false;
+    };
   };
 
-  outputs = {cardano-api, ...}: let
-    supportedSystems = [
-      "x86_64-linux"
-      "aarch64-linux"
-      "x86_64-darwin"
-      "aarch64-darwin"
-    ];
+  outputs = {
+    cardano-api,
+    haskdogs-src,
+    ...
+  }: let
+    supportedSystems = ["x86_64-linux" "aarch64-linux" "x86_64-darwin" "aarch64-darwin"];
     forAllSystems = f:
       builtins.listToAttrs (map (system: {
           name = system;
@@ -21,7 +24,20 @@
   in {
     devShells = forAllSystems (system: let
       pkgs = cardano-api.legacyPackages.${system}.nixpkgs;
-      cardanoApiShell = cardano-api.legacyPackages.${system}.cabalProject.shell;
+      cabalProject = cardano-api.legacyPackages.${system}.cabalProject;
+      cardanoApiShell = cabalProject.shell;
+      haskellNix = pkgs.haskell-nix;
+      inherit (cabalProject.args) compiler-nix-name;
+      haskdogs =
+        (haskellNix.cabalProject' {
+          src = haskdogs-src;
+          inherit compiler-nix-name;
+        }).hsPkgs.haskdogs.components.exes.haskdogs;
+      hasktags =
+        (haskellNix.hackage-package {
+          name = "hasktags";
+          inherit compiler-nix-name;
+        }).components.exes.hasktags;
     in {
       default =
         pkgs.mkShell {
@@ -30,9 +46,7 @@
 
           # Extra packages needed for cardano-node and other projects
           packages =
-            [
-              pkgs.lmdb
-            ]
+            [pkgs.lmdb pkgs.parallel haskdogs hasktags]
             ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [
               pkgs.systemdLibs
               pkgs.glibcLocales
@@ -47,8 +61,8 @@
     });
 
     formatter =
-      forAllSystems (system:
-        cardano-api.legacyPackages.${system}.nixpkgs.alejandra);
+      forAllSystems
+      (system: cardano-api.legacyPackages.${system}.nixpkgs.nixfmt);
   };
 
   nixConfig = {

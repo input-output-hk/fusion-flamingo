@@ -6,6 +6,24 @@ paths:
   - "cabal.project.local"
 ---
 
+# Build and project layout
+- **Always run `cabal` from `/work`** (the metarepo root where `cabal.project` lives), NEVER from inside a subproject.
+  The metarepo `cabal.project` orchestrates builds across all subprojects.
+
+# Changelog fragments
+- **Never wrap description text in changelog fragments.**
+  Keep the entire description on a single line after `description: |` regardless of length.
+  The YAML literal block scalar preserves line breaks, so wrapping introduces unwanted newlines.
+
+# Haskell code navigation
+- **ctags first** for finding definitions.
+  `/work/agent-tags` is a hasktags index covering the project and its dependencies.
+  Use `grep -m5 '^SymbolName\t' /work/agent-tags` before anything else when looking up a symbol.
+  This is instant, precise, and always the first thing to try.
+  If `/work/agent-tags` is missing or stale, fall back to Serena (`find_symbol`) or grep, then suggest running `/regenerate-tags` to rebuild.
+- **HLS** (Haskell only): use for go-to-definition, type info, and diagnostics in Haskell projects.
+  **After every edit to a `.hs` file**, check HLS diagnostics on the changed lines before reporting the edit as complete.
+
 # cardano-rpc patterns
 - Never manually edit generated code (e.g. proto-lens output in `gen/`).
   Use nix dev shell to run code generation tools (e.g. `nix develop --command bash -c "cd cardano-rpc && buf generate proto"`).
