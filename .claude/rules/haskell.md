@@ -30,14 +30,7 @@ paths:
 - `Proto msg` is a grapesy newtype wrapper.
   Internal functions should use plain proto-lens types, not `Proto`-wrapped.
   Use `getProto`/`fmap getProto` only at the RPC handler boundary.
-- RIO hides many Prelude functions.
-  `sortBy` is NOT re-exported by RIO - import from `Data.List`.
-  Check RIO re-exports before assuming standard functions are in scope.
-- RIO's `^.` works with proto-lens van Laarhoven lenses.
-  No need for `lens-family` dependency.
-- Use `toList` (from `GHC.IsList`) instead of deprecated `valueToList` for `Value`.
-- Prefer backtick-infix sections over lambdas (e.g. `` (`f` y) `` not `\x -> f x y`).
-  hlint catches this.
+- Don't create trivial one-liner helpers that just wrap `defMessage & lens .~ value` - inline them at call sites.
 - When sending raw CBOR over RPC, use `readTextEnvelopeFromFile` + `textEnvelopeRawCBOR` instead of `readFileTextEnvelope` + `serialiseToCBOR`.
   The latter round-trips through CBOR deserialisation/serialisation unnecessarily.
   If you also need the decoded Haskell value, call `deserialiseFromTextEnvelope` on the same `TextEnvelope`.
@@ -49,37 +42,7 @@ paths:
 
 # Haskell style
 - Use readable value names, not acronyms: `shelleyBasedEra` not `sbe`, `policy` not `pid`, `network` not `nw`, `credential` not `cred`, `address` not `addr`, `value` not `val`, `tokenName` not `aname`, `quantity` not `qty`.
-- Don't create trivial one-liner helpers that just wrap `defMessage & lens .~ value` - inline them at call sites.
-- Use `OverloadedLists` and list literals instead of deprecated `valueFromList`.
-- Check that type constraints are actually needed before adding them.
-- **Always add Haddock comments over function parameters** when writing Haddock documentation.
-  Use the `-- ^` syntax on each parameter to describe its purpose.
-- **Always use `do` instead of `let ... in`.**
-  Write `do { let x = ...; expr }` not `let x = ... in expr`.
-- **Always prefer `$` over `()`** for function application.
-  Write `f $ g x` not `f (g x)`.
-- **Prefer dots over multiple dollars** in function application chains.
-  Write `f . g . h $ u v` not `f $ g $ h $ u v`.
-- **No staircase pattern.** Never nest `case ... of Just/Nothing` producing rightward drift.
-  Use `MaybeT` + `Alternative` (`<|>`) to flatten sequential `IO (Maybe a)` fallbacks:
-  ```haskell
-  -- WRONG (staircase):
-  do x <- action1
-     case x of
-       Just v -> pure v
-       Nothing -> do y <- action2
-                     case y of ...
-  -- RIGHT:
-  fromMaybe fallback <$> runMaybeT
-    (  MaybeT action1
-   <|> MaybeT action2
-   <|> MaybeT action3
-    )
-  ```
-  For pure `Maybe` chains without `IO`, use plain `<|>` on `Maybe` (its `Alternative` instance).
-- **Never use `BlockArguments`** extension.
-- **Never use `putStrLn`** in library code - use `Data.Text.IO.hPutStrLn stdout` for `Text` output (`say` is not available in RIO 0.1.24.0).
-- **Never modify `fourmolu.yaml`**, hlint rules, or cabal gild rules unless explicitly asked.
+- **Never use `putStrLn`** in library code - use `Data.Text.IO.hPutStrLn stdout` for `Text` output.
 - In Hedgehog tests, use `H.nothingFail` from hedgehog-extras instead of `case ... Nothing -> H.failure; Just x -> do`.
   Import convention: `import Hedgehog as H` + `import Hedgehog.Extras qualified as H`.
 - In Hedgehog tests, use `H.leftFail` / `H.leftFailM` from hedgehog-extras instead of `case ... Left err -> H.annotateShow err >> H.failure; Right x -> do`.
@@ -89,4 +52,4 @@ paths:
 - Use `H.propertyOnce` (from hedgehog-extras) instead of `H.property` for tests with no generators (`forAll`) - i.e., unit tests with fixed data.
 - In `retryUntilJustM`, match the guard condition to the expected postcondition exactly.
   A weaker guard (e.g. `> 0` when the assertion expects `=== 2`) causes the retry to exit early and the assertion to fail.
-- Prefer `GHC.IsList` (`GHC.Exts`) `toList`/`fromList` over specialised container versions (e.g. `Set.fromList`, `Data.Foldable.toList`).
+- **Run `scripts/devshell/prettify`** on changed files after all code changes, before reporting as complete.

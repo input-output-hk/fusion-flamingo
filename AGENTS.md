@@ -6,15 +6,8 @@
      (host configs, services, modules, flake inputs, etc.) lives in the code. -->
 
 # Rules for AI agents
-- NEVER assume the default branch is called `main`.
-  Check via `git symbolic-ref refs/remotes/origin/HEAD` or `git remote show origin | grep 'HEAD branch'` before targeting it for PRs, rebases, or diffs.
-  Use `gh api repos/OWNER/REPO --jq '.default_branch'` when SSH is unavailable.
 - When you discover a surprising gotcha, easy-to-make mistake, or non-obvious fact about this project, add it to this file (AGENTS.md) - NOT to private memory.
   This file is the shared knowledge base for the project.
-- Keep all git remotes using SSH (e.g. `git@github.com:org/repo.git`), never HTTPS.
-  Never add HTTPS remotes as a workaround when SSH fails - ask the user to fix SSH access instead.
-  Use `gh api` for read-only GitHub queries (PRs, comments, etc.) when SSH is unavailable.
-- Do NOT push to any remote - always ask the user for confirmation first.
 
 # Directory structure
 - Always execute nix commands in each subproject's root directory.
@@ -31,3 +24,23 @@
 - **Serena** (any language): use `find_referencing_symbols` for reference lookups, `get_symbols_overview` and `find_symbol` for exploring types and signatures without reading whole files.
 - **Grep**: reserve for text-level searches - comments, string literals, non-code patterns, or when semantic tools are unavailable.
 - Language-specific rules in `.claude/rules/<lang>.md` may add additional navigation tooling (e.g. ctags) on top of the above.
+
+# GitHub Actions
+- Use `cachix/install-nix-action@v30` with IOG trusted keys and substituters.
+  Pattern: `nix run github:input-output-hk/cardano-dev#<app> -- <args>`.
+  Reference: cardano-api's `check-cabal-files.yml`.
+
+# Project context
+
+## cardano-rpc
+- Haskell gRPC server embedded in cardano-node via UTxO RPC spec.
+- Currently uses Node-to-Client IPC (one connection per request, double serialisation).
+  Planned: direct ledger state access via TVar/STM (ADR-019).
+- Roadmap: UTxORPC parity, conformance tests, direct ledger access, HTTP endpoint, streaming (ChainSync), governance/stake queries, ecosystem tooling.
+- Key ADRs: ADR-018 (architecture), ADR-019 (direct ledger access) in cardano-node-wiki/docs/.
+
+## herald
+- Changelog/release automation CLI in `/work/cardano-dev/herald/`.
+- Nix flake at `/work/cardano-dev/flake.nix` (top level), exposed as `apps.herald`.
+  External ref: `github:input-output-hk/cardano-dev#herald`.
+- GHA composite actions at `.github/actions/{validate,release}/action.yml`.
