@@ -11,8 +11,8 @@ repository cardano-haskell-packages
     d4a35cd3121aa00d18544bb0ac01c3e1691d618f462c46129271bccf39f7e8ee
 
 index-state:
-  , hackage.haskell.org 2026-04-17T09:20:55Z
-  , cardano-haskell-packages 2026-05-20T06:15:42Z
+  , hackage.haskell.org 2026-05-27T06:20:37Z
+  , cardano-haskell-packages 2026-05-27T09:43:46Z
 
 packages:
   -- adawallet/*/*.cabal
@@ -38,7 +38,7 @@ packages:
   cardano-api/cardano-wasm/*.cabal
   cardano-api/cardano-rpc/*.cabal
 
-  cardano-cli/*/*.cabal
+  -- cardano-cli/*/*.cabal
 
   -- ekg-forward/*.cabal
 

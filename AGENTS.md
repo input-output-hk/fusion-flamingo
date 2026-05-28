@@ -35,9 +35,10 @@
 ## cardano-rpc
 - Haskell gRPC server embedded in cardano-node via UTxO RPC spec.
 - Currently uses Node-to-Client IPC (one connection per request, double serialisation).
-  Planned: direct ledger state access via TVar/STM (ADR-019).
-- Roadmap: UTxORPC parity, conformance tests, direct ledger access, HTTP endpoint, streaming (ChainSync), governance/stake queries, ecosystem tooling.
-- Key ADRs: ADR-018 (architecture), ADR-019 (direct ledger access) in cardano-node-wiki/docs/.
+  Planned: node kernel access - in-process access to `NodeKernel` (ChainDB, Mempool, Config) replacing N2C IPC (ADR-019).
+- Roadmap: UTxORPC parity, conformance tests, node kernel access, HTTP endpoint, streaming (ChainSync), governance/stake queries, ecosystem tooling.
+- Key ADRs: ADR-018 (architecture), ADR-019 (node kernel access) in cardano-node-wiki/docs/.
+- Design docs and stories: `cardano-api/cardano-rpc/docs/node-kernel-access/`.
 
 ## herald
 - Changelog/release automation CLI in `/work/cardano-dev/herald/`.
