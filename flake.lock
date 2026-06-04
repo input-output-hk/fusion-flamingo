@@ -3,11 +3,11 @@
     "CHaP": {
       "flake": false,
       "locked": {
-        "lastModified": 1779260980,
-        "narHash": "sha256-5SvJkobPmCtSYKwQWu1M/iFXj3g1PDy2bMJ9g1vm/No=",
+        "lastModified": 1779721159,
+        "narHash": "sha256-mewNJj5lMwoNJLtkg69+AW76AiUBpbuJtdC/tdgbPmk=",
         "owner": "intersectmbo",
         "repo": "cardano-haskell-packages",
-        "rev": "4b6a661aa6463529c0ab0207567d62f85a6b899c",
+        "rev": "61d073fbab6dd2ab96378d84b382f2738ab143f2",
         "type": "github"
       },
       "original": {
@@ -173,11 +173,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1779348714,
-        "narHash": "sha256-suy6InXq2h3za09xsxZ+cH4rBDoF+OqtG080yfcKyM0=",
-        "ref": "refs/heads/mgalazyn/feature/bump-plutus-ledger-api",
-        "rev": "3cf4d6d40943ffae459e0e7122efa4f8a41cfa0d",
-        "revCount": 10456,
+        "lastModified": 1779972255,
+        "narHash": "sha256-/p7qEFqsyCPkNENnO4Ur5trMmDRnqfLH0tv9tAy4RJw=",
+        "ref": "refs/heads/mgalazyn/feature/node-kernel-access",
+        "rev": "0c54d20832d2224e485c386256b0e8b85429fef9",
+        "revCount": 10475,
         "type": "git",
         "url": "file:./cardano-api"
       },

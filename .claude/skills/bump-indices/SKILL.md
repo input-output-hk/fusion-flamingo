@@ -10,7 +10,7 @@ Arguments: $ARGUMENTS
 
 ## Layout
 
-The **metarepo** is `/work` - it has a `cabal.project` that orchestrates builds across all submodules.
+The **metarepo** is `/work` - it has a `cabal.project` that orchestrates builds across all subprojects.
 The **subprojects** each have their own `cabal.project` and `flake.nix` with `flake.lock`:
 
 | Subproject   | Path               |
@@ -86,6 +86,7 @@ Show what was bumped:
 - Old and new flake.lock revisions for subprojects
 
 ## Important rules
+- **Only bump what the user asked for.** "metarepo" means `/work/cabal.project` only - do NOT touch subprojects. "cardano-api" means only cardano-api. "all" means everything.
 - Always use `path:<dir>` for nix flake commands.
 - Flake input names are `CHaP` (capital C-H-A-P) and `hackageNix` (camelCase). Getting the case wrong silently creates a new input.
 - The metarepo (`/work`) has no flake.lock to bump - only its `cabal.project`.
