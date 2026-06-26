@@ -42,6 +42,11 @@ Arguments: $ARGUMENTS
 
 5. **Report** the stanza that was written, including the computed hash.
 
+## Flake lock updates after SRP changes
+When SRPs are updated, the user may also need flake lock updates to match the new index-states.
+The hackage.nix input name varies by flake - check `nix flake metadata <flake-dir> | grep -i hackage` to find the correct path (e.g. `haskellNix/hackage`, `hackageNix`, etc.).
+Update with: `nix flake lock <flake-dir> --update-input <hackage-input> --update-input CHaP`
+
 ## Important rules
 - NEVER use placeholder hashes. Always compute the real hash.
 - NEVER omit the `--sha256:` line. Nix requires it for reproducible fetching.

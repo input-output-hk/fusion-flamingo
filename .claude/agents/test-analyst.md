@@ -43,6 +43,18 @@ A weaker guard (e.g. `> 0` when assertion expects `=== 2`) causes early exit and
 - For nix test builds: `nix build 'path:/work/cardano-node#hydraJobs.native.tests/cardano-testnet/cardano-testnet-test' --allow-import-from-derivation --accept-flake-config`
 - For cabal test runs: `cabal test <package>:<test-suite> --test-show-details=direct`
 
+### CRITICAL: Capture output once, analyse from the log
+
+Tests are expensive. **Never re-run a test suite just to see different parts of the output.**
+
+1. **Always tee output to a log file** when running tests:
+   ```
+   cabal test <target> --test-show-details=direct 2>&1 | tee /tmp/test-output.log
+   ```
+2. **Analyse from the log file** using grep, Read, etc. - never re-run to get more output.
+3. If the test run times out or is killed, analyse whatever was captured so far.
+4. Report results from the log file. Use `grep`, `tail`, `head` on the log - not another test run.
+
 ## Diagnosing Failures
 
 1. Read the full test output carefully.

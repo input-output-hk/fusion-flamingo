@@ -8,6 +8,8 @@
 # Rules for AI agents
 - When you discover a surprising gotcha, easy-to-make mistake, or non-obvious fact about this project, add it to this file (AGENTS.md) - NOT to private memory.
   This file is the shared knowledge base for the project.
+- **Never run builds (`cabal build`, `nix build`) in subprojects without explicit user permission.**
+  The metarepo orchestrates builds; subproject builds can interfere. Always ask first.
 
 # Directory structure
 - Always execute nix commands in each subproject's root directory.
@@ -45,3 +47,10 @@
 - Nix flake at `/work/cardano-dev/flake.nix` (top level), exposed as `apps.herald`.
   External ref: `github:input-output-hk/cardano-dev#herald`.
 - GHA composite actions at `.github/actions/{validate,release}/action.yml`.
+
+# Dijkstra era gotchas
+- `caseShelleyToBabbageOrConwayEraOnwards` crashes at runtime for Dijkstra (`error "TODO Dijkstra"`).
+  Use `caseShelleyToBabbageOrConwayOrDijkstra` instead and pattern match on `ConwayEraOnwards` constructors in the right arm to get concrete-era instance resolution (the bare `ConwayEraOnwards era` carries no constraints).
+- `conwayEraOnwardsConstraints` also crashes for Dijkstra - never use it.
+  Its constraint bundle requires `TxCert ~ ConwayTxCert` which Dijkstra cannot satisfy.
+- Dijkstra has `ConwayEraTxCert DijkstraEra` (so `mkDelegTxCert` works) but NOT `ShelleyEraTxCert`.
