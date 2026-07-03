@@ -30,13 +30,12 @@ packages:
   cardano-node/bench/locli
   cardano-node/bench/plutus-scripts-bench
   cardano-node/bench/tx-generator
-  cardano-node/bench/cardano-recon-framework
   cardano-node/bench/cardano-timeseries-io
 
-  -- cardano-api/cardano-api/*.cabal
-  -- cardano-api/cardano-api-gen/*.cabal
-  -- cardano-api/cardano-wasm/*.cabal
-  -- cardano-api/cardano-rpc/*.cabal
+  cardano-api/cardano-api/*.cabal
+  cardano-api/cardano-api-gen/*.cabal
+  cardano-api/cardano-wasm/*.cabal
+  cardano-api/cardano-rpc/*.cabal
 
   -- cardano-cli/*/*.cabal
 

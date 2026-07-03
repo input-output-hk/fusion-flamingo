@@ -10,6 +10,8 @@
   This file is the shared knowledge base for the project.
 - **Never run builds (`cabal build`, `nix build`) in subprojects without explicit user permission.**
   The metarepo orchestrates builds; subproject builds can interfere. Always ask first.
+- **Run `scripts/devshell/prettify`** on changed Haskell files after edits, but only in subprojects that have this script.
+  Check the script exists before running it - not every repo has one (e.g. cardano-node does not).
 
 # Directory structure
 - Always execute nix commands in each subproject's root directory.

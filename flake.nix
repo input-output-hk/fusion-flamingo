@@ -38,6 +38,11 @@
           name = "hasktags";
           inherit compiler-nix-name;
         }).components.exes.hasktags;
+      stylish-haskell =
+        (haskellNix.hackage-package {
+          name = "stylish-haskell";
+          inherit compiler-nix-name;
+        }).components.exes.stylish-haskell;
     in {
       default =
         pkgs.mkShell {
@@ -46,7 +51,7 @@
 
           # Extra packages needed for cardano-node and other projects
           packages =
-            [pkgs.lmdb pkgs.parallel haskdogs hasktags]
+            [pkgs.lmdb pkgs.parallel haskdogs hasktags stylish-haskell]
             ++ pkgs.lib.optionals pkgs.stdenv.hostPlatform.isLinux [
               pkgs.systemdLibs
               pkgs.glibcLocales
