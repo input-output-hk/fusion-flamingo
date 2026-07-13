@@ -95,6 +95,8 @@ Show the user the fragment content and file path.
 ## Important rules
 - Always read `.herald.yml` first to get the valid projects and kinds for this repo.
 - Always read PVP (https://pvp.haskell.org/) when deciding the change kind for dependency bumps or API changes.
+- Classify against the last released version, not the previous commit.
+  Changes to API that has never been released, and changes to `Internal.*` modules, are NOT breaking - use refactoring/compatible instead.
 - Never wrap description text across multiple lines.
 - Never guess the PR number - discover it from the remote or ask.
 - The `kind:` field is a YAML list even for a single kind.

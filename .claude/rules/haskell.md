@@ -28,8 +28,8 @@ paths:
 - Never manually edit generated code (e.g. proto-lens output in `gen/`).
   Use nix dev shell to run code generation tools (e.g. `nix develop --command bash -c "cd cardano-rpc && buf generate proto"`).
 - `Proto msg` is a grapesy newtype wrapper.
-  Internal functions should use plain proto-lens types, not `Proto`-wrapped.
-  Use `getProto`/`fmap getProto` only at the RPC handler boundary.
+  Use `Proto`-wrapped messages throughout, including internal conversion functions.
+  Handler boundary types, the `Inject` orphans and nested fields of `Proto` messages all expect `Proto` values, so wrapping throughout eliminates `getProto`/`Proto` shims.
 - Don't create trivial one-liner helpers that just wrap `defMessage & lens .~ value` - inline them at call sites.
 - When sending raw CBOR over RPC, use `readTextEnvelopeFromFile` + `textEnvelopeRawCBOR` instead of `readFileTextEnvelope` + `serialiseToCBOR`.
   The latter round-trips through CBOR deserialisation/serialisation unnecessarily.
