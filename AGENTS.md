@@ -23,6 +23,20 @@
 - **Always create worktrees on a branch**, never detached HEAD.
   Use `git worktree add -b <branch> <path> <start-point>` to create a local branch tracking the remote.
   Never use `git worktree add <path> <remote-ref>` without `-b` - it creates a detached HEAD.
+- **When checking out a PR whose head branch already exists locally, reuse that branch** (`git worktree add <path> <branch>`, no `-b`) if it points at the PR head commit.
+  Never create a suffixed duplicate branch (e.g. `<branch>-pr1234`) - the work then lands on a branch the PR does not track.
+  If the existing local branch diverges from the PR head, stop and ask the user.
+- **After creating a worktree, rewrite both worktree pointer files to relative paths** (the container mounts the metarepo at `/work` but the host uses a different path, so the absolute paths git writes break git on the host).
+  **Not every subproject is a submodule - check first** with `git -C /work/<subproject> rev-parse --git-common-dir`:
+  some (e.g. cardano-node) are submodules with gitdir `/work/.git/modules/<subproject>`, others (e.g. cardano-api) are standalone clones with gitdir `/work/<subproject>/.git`.
+  Derive the relative paths from the real gitdir; never assume the submodule layout.
+  Submodule case:
+  `<subproject>/@worktree/<name>/.git` -> `gitdir: ../../../.git/modules/<subproject>/worktrees/<name>` (three `../`),
+  `/work/.git/modules/<subproject>/worktrees/<name>/gitdir` -> `../../../../../<subproject>/@worktree/<name>/.git` (five `../`).
+  Standalone case:
+  `<subproject>/@worktree/<name>/.git` -> `gitdir: ../../.git/worktrees/<name>` (two `../`),
+  `/work/<subproject>/.git/worktrees/<name>/gitdir` -> `../../../@worktree/<name>/.git` (three `../`).
+  Verify with `git -C /work/<subproject> worktree list` - it must show the real worktree path, not a phantom one.
 
 # Tool preferences for code navigation
 - **Semantic tools** for references and type info.
@@ -39,9 +53,16 @@
   Whenever HLS is not available or returns stale or empty results, verify with `cabal build <target>` / `cabal test <target>` from `/work` - never block on HLS.
   Verification builds from the metarepo root `/work` are always permitted; the no-builds rule above is about building inside subproject directories.
 
+# haskell.nix gotchas
+- Test fixtures inside a test suite's `hs-source-dirs` are included in nix `checks` automatically:
+  haskell.nix's component source filter (`lib/clean-cabal-component.nix`) keeps entire `hs-source-dirs` trees, and the check (`lib/check.nix`) runs with CWD at the package root, so package-root-relative fixture paths resolve.
+  `extra-source-files` is therefore only needed for files OUTSIDE `hs-source-dirs`, and it also controls sdist contents - never list test-only fixtures there, or they ship with the Hackage/CHaP release.
+
 # GitHub gotchas
 - `gh pr edit` fails against IntersectMBO repos with a `projectCards` GraphQL deprecation error (classic projects sunset).
   Update PRs via REST instead: `gh api -X PATCH repos/<owner>/<repo>/pulls/<n> -f title=... -F body=@file`.
+- `gh api -f body=@file` does NOT read the file - `-f`/`--raw-field` treats the value literally, posting the filename as the body.
+  Only `-F`/`--field` expands `@file`; always verify the posted body in the API response.
 
 # GitHub Actions
 - Use `cachix/install-nix-action@v30` with IOG trusted keys and substituters.
@@ -76,10 +97,26 @@
 # cardano-api experimental API gotchas
 - `Cardano.Api.Experimental` does NOT re-export `AnyScriptWitness`/`AnyScriptWitnessSimple`.
   Import `Cardano.Api.Experimental.AnyScriptWitness` directly (it is an exposed module).
+- `Cardano.Api.Experimental` does NOT re-export `Convert (..)` either (defined in `Cardano.Api.Experimental.Era`).
+  Without it, dispatch from `Era era` to an eon (e.g. `AlonzoEraOnwards`) needs a hand-rolled two-arm case.
+- The experimental `Era` GADT constructor names (`ConwayEra`, `DijkstraEra`) clash with old-API `CardanoEra` constructors that plain `Cardano.Api` re-exports.
+  Import the experimental `Era` type without `(..)`, or qualified, in modules that also import `Cardano.Api`.
+- `obtainCommonConstraints` implies `L.BabbageEraTxBody (LedgerEra era)`, whose superclass chain provides `AlonzoEraTxOut`/`BabbageEraTxOut` unconditionally (every `IsEra` era is Alonzo-onwards).
+  So ledger `TxOut` construction needs no era-conditional dispatch - `forEraMaybeEon` checks for script-data support are unnecessary under `IsEra`.
+  Public recipe: `mkCoinTxOut` (`Cardano.Ledger.Core`) + `datumTxOutL` (`Cardano.Ledger.Api.Tx.Out`) + `DatumHash . hashData . toAlonzoData @(LedgerEra era)` (`toAlonzoData` via `Cardano.Api.Plutus`; `hashData`/`Datum (..)` from `Cardano.Ledger.Plutus.Data`).
+  The `@(LedgerEra era)` type application is required - point-free composition leaves `toAlonzoData`'s era unpinned ("Cannot satisfy: ProtVerLow <= ProtVerHigh era0").
+- cardano-api symbol reachability depends on export-list chains, not module names or paths: `Cardano.Api.Tx.Internal.Output` is `other-modules` in 11.3 (so `toBabbageTxOutDatum` and the `ScriptDataHash` constructor are unreachable outside the package), yet `AlonzoEraOnwards (..)` IS in scope via plain `Cardano.Api` despite living in an `Internal` other-module, because the exposed `Cardano.Api.Era` re-exports it.
+  Verify against the package's cabal `exposed-modules` and export lists, never path names.
+- There is NO experimental analogue of `toBabbageTxOutDatum` (checked cardano-api 11.3 and current master): the ledger-lens recipe above IS the idiomatic way (cardano-api's own `FromJSON (Exp.TxOut era)` instance uses it internally).
+  False friend: the experimental `Datum ctx era` GADT in `Cardano.Api.Experimental.Tx` has TxOut-flavoured constructor names (`TxOutDatumHash`/`TxOutDatumInline`/`TxOutSupplementalDatum`) but is ONLY for reference-input datum collection (`TxInsReference`), not for attaching datums to a `TxOut` under construction.
+  Supplemental datums pair the TxOut's `DatumHash` with `setTxSupplementalDatums` on the `TxBodyContent`.
 - Native script patterns (`RequireAllOf` etc.) are NOT in `Cardano.Api.Ledger`.
   Import `Cardano.Ledger.Shelley.Scripts` for them; a qualified import avoids needing the `PatternSynonyms` extension in the import list.
 - `PolicyAssets`' Show instance prints `policyAssetsFromList`, but no such function exists.
   Use `GHC.Exts.fromList` (`IsList` instance); `valueFromList` for `Value` is deprecated in favour of `fromList` too.
+- Era TAG types (`BabbageEra` etc.) and `CardanoEra` constructors pun the same names in different namespaces.
+  Importing `CardanoEra (..)` without the tag types makes a type-position `BabbageEra` resolve to the DataKinds-promoted constructor, giving a baffling kind error ("'BabbageEra' has kind 'CardanoEra BabbageEra'").
+  Import the tag types explicitly alongside `CardanoEra (..)` in explicit import lists.
 
 # Ledger witness serialisation gotchas
 - `rawSerialiseVerKeyDSIGN`/`rawSerialiseSigDSIGN` are not re-exported by cardano-ledger or cardano-api.
@@ -87,6 +124,11 @@
 - `BootstrapWitness` field accessors (`bwKey`, `bwSignature`, `bwChainCode`, `bwAttributes`) are NOT exported via `Cardano.Ledger.Api` (only the abstract type is).
   Import `Cardano.Ledger.Keys.Bootstrap` for them (also exports `ChainCode (..)`).
 - `originalBytes` (memoised original CBOR, e.g. of a plutus `Data`) is available without extra imports: `Cardano.Ledger.<Era>.Core` modules re-export `Cardano.Ledger.Core`, which re-exports `Cardano.Ledger.Hashes` including `SafeToHash (..)`.
+
+# Ledger TxCert gotchas
+- `Cardano.Ledger.Api.Tx.Cert` exports the cert classes with only a method subset: `mkRegTxCert`/`mkDelegTxCert` are NOT reachable through it.
+  Import `Cardano.Ledger.Shelley.TxCert (ShelleyEraTxCert (..))` / `Cardano.Ledger.Conway.TxCert (ConwayEraTxCert (..))` for the smart-constructor methods (same qualified alias is fine - the re-exported names are the same entities).
+- `TxCert`/`ShelleyLedgerEra` are non-injective type families, so `mkRegTxCert`/`mkDelegTxCert` need an explicit type application `@(ShelleyLedgerEra era)` when the result is only consumed by a class method (`show`, `isRegStakeTxCert`); GHC cannot invert the family from the context.
 
 # Ledger PParams HKD gotchas
 - The `hkd*L` class lenses (e.g. `hkdMaxTxSizeL`) always need explicit type applications `@era @f` at use sites.
@@ -108,11 +150,12 @@
 - All of this is exported via `Cardano.Ledger.Api` (from `Cardano.Ledger.Api.Tx.AuxData`, including `Metadatum (..)`).
 
 # Dijkstra era gotchas
-- `caseShelleyToBabbageOrConwayEraOnwards` crashes at runtime for Dijkstra (`error "TODO Dijkstra"`).
-  Use `caseShelleyToBabbageOrConwayOrDijkstra` instead and pattern match on `ConwayEraOnwards` constructors in the right arm to get concrete-era instance resolution (the bare `ConwayEraOnwards era` carries no constraints).
-- `caseShelleyToBabbageOrConwayOrDijkstra` exists on the `mgalazyn/feature/node-kernel-access` branch (added in `Era/Internal/Case.hs`, exported from `Cardano.Api.Era`), but NOT yet on origin/main.
-  Its left arm provides `ShelleyToBabbageEraConstraints` (including `TxCert ~ ShelleyTxCert`); the right arm gets the bare witness (see `txCertToUtxoRpcCertificate` in cardano-rpc for usage).
-  On branches without it, pattern match on the seven `ShelleyBasedEra` constructors directly - at concrete eras all type families reduce and no eon constraint machinery is needed.
+- For era dispatch in cardano-rpc, match all seven `ShelleyBasedEra` constructors explicitly, never with wildcards.
+  At concrete eras every type family reduces and every ledger instance resolves, including Dijkstra, so no eon constraint machinery is needed, and a new era becomes a compile error at every dispatch site.
+  Do NOT use `caseShelleyToBabbageOrConwayEraOnwards` (Dijkstra `error` stub), do NOT add bespoke dispatchers to `Case.hs`, and do NOT nest `forShelleyBasedEraInEon`.
+  See `txCertToUtxoRpcCertificate` and `redeemersByIndex` in cardano-rpc for the accepted pattern.
+- cardano-ledger-api's `AnyEra*` classes (`AnyEraTx`, `AnyEraTxBody`, `AnyEraTxWits`) provide uniform era-gated getters (`mintTxBodyG` etc.; `Nothing` where the era predates the field) and are Dijkstra-total; cardano-rpc's `anyEraTxConstraints` brings them plus `IsShelleyBasedEra` into scope from a `ShelleyBasedEra` witness.
+  `AnyEraTxCert` however CANNOT read pre-Conway stake delegations: `anyEraToDelegTxCert` is `const Nothing` before Conway and no legacy `DelegStakeTxCert` getter exists, so certificate reading needs the concrete-era matchers instead.
 - ALL eon constraint bundles except `alonzoEraOnwardsConstraints` error at runtime for Dijkstra: `shelleyBasedEraConstraints`, `allegraEraOnwardsConstraints`, `maryEraOnwardsConstraints`, `babbageEraOnwardsConstraints`, `conwayEraOnwardsConstraints`, and all six `caseShelleyTo*` dispatchers in `Era/Internal/Case.hs` ("TODO Dijkstra" stubs).
   The experimental `obtainCommonConstraints` IS Dijkstra-total, but the experimental `Era` GADT only has Conway and Dijkstra constructors, so it cannot drive code that must also handle historical eras.
 - `conwayEraOnwardsConstraints` also crashes for Dijkstra - never use it.

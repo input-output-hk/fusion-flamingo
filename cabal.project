@@ -24,7 +24,6 @@ packages:
   cardano-node/cardano-submit-api/cardano-submit-api.cabal
   cardano-node/cardano-tracer/cardano-tracer.cabal
   cardano-node/trace-forward/trace-forward.cabal
-  cardano-node/trace-resources/trace-resources.cabal
   cardano-node/bench/cardano-profile
   cardano-node/bench/cardano-topology
   cardano-node/bench/locli
