@@ -11,8 +11,8 @@ repository cardano-haskell-packages
     d4a35cd3121aa00d18544bb0ac01c3e1691d618f462c46129271bccf39f7e8ee
 
 index-state:
-  , hackage.haskell.org 2026-05-27T06:20:37Z
-  , cardano-haskell-packages 2026-06-01T00:05:45Z
+  , hackage.haskell.org 2026-07-01T00:33:51Z
+  , cardano-haskell-packages 2026-06-29T12:05:19Z
 
 packages:
   -- adawallet/*/*.cabal
@@ -155,6 +155,20 @@ if impl(ghc >= 9.12)
     -- , cardano-cli
 
     -- , hedgehog-extras
+
+-- Needed for all ghc versions due to added aeson >= 2.3 bound.
+allow-newer:
+  , cborg-json:aeson
+  , criterion-measurement:aeson
+  , deriving-aeson:aeson
+  , ekg-json:aeson
+  , grapesy:aeson
+  , grpc-spec:aeson
+  , hedgehog-extras:aeson
+  , microstache:aeson
+  , vary:aeson
+  , monad-control:transformers
+  , http-api-data:text-iso8601
 
 extra-packages: Cabal
 
