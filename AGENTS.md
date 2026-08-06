@@ -12,6 +12,9 @@
   Find a CPP-free solution or ask; mind that CI builds with multiple GHC versions (9.6 upwards), so version-gated syntax needs a different approach.
 - **Never run builds (`cabal build`, `nix build`) in subprojects without explicit user permission.**
   The metarepo orchestrates builds; subproject builds can interfere. Always ask first.
+  Trap observed: "run the tests from the package root" (needed because test fixtures resolve relative to the package root) does NOT mean `cd <subproject> && cabal test` - that solves against the subproject's own `cabal.project` and builds the world into `<subproject>/dist-newstyle`.
+  Run `cabal test` from `/work` (cabal sets the test binary's CWD to the package root itself), or run the already-built test binary directly with CWD at the package root.
+  `cardano-node/dist-newstyle` and `cardano-api/dist-newstyle` are `/dev/null` symlinks precisely to sabotage this mistake.
 - **The Bash tool's persistent cwd can drift away from `/work` mid-session** (observed: a `cabal build` from `/work` was followed moments later, with no intervening `cd`, by a `cabal test` that had silently landed in `/work/cardano-api` and solved against the subproject's own `cabal.project` instead of the metarepo's).
   Root cause unconfirmed (possibly a shared shell backend with concurrent agents), but the fix is cheap: prefix every metarepo build/test command with `cd /work &&` rather than relying on cwd persistence, and sanity-check with `pwd` plus the printed dist-newstyle paths in the build log (`/work/dist-newstyle/...` vs `/work/<subproject>/dist-newstyle/...`) whenever the command's target set matters.
 - **`gcc: fatal error: cannot execute 'cc1'` during a `cabal build` is a transient toolchain flake, not a code error - retry once before concluding the commit is broken.**
@@ -21,6 +24,17 @@
 - **Run `scripts/devshell/prettify`** on changed Haskell files after edits, but only in subprojects that have this script.
   Check the script exists before running it - not every repo has one (e.g. cardano-node does not).
   It lives at the REPO root (sibling of `cabal.project`/`flake.nix`), one level above package dirs like `cardano-api/cardano-api/` - check with `git ls-files scripts/` from the repo/worktree root before concluding it does not exist.
+- **`timeout N cabal test/build/repl ...` kills only the `cabal` wrapper process, not the GHC or test-binary children it spawned.**
+  The orphans keep running (or hang) silently and accumulate as zombies; they hold no locks but corrupt any process-based diagnosis of "is something building".
+  After any timed-out Haskell command, check `ps` for stragglers and kill them explicitly.
+
+# Haskell test gotchas
+- **QuickCheck's `Arbitrary UTCTime` can produce Julian day numbers that are cheap thunks but pathologically expensive to force**: Data.Time's Gregorian conversion (`show`, `iso8601Show`) effectively hangs on them, which looks like a test-suite deadlock.
+  `mod`/`truncate` clipping does not help - it forces the same value.
+  Generate small dates independently (e.g. `ModifiedJulianDay <$> Gen.integral (Range.linear 0 1_000_000)`) instead of transforming the arbitrary one.
+- **The `clipI` helper pattern from `Test.Cardano.Rpc.ProtocolParameters` is only valid for SIGNED types.**
+  On `Natural` it throws arithmetic underflow; on `Word64` it wraps around and turns the clip into an infinite loop.
+  Use a dedicated unsigned clip for unsigned fields.
 
 # Directory structure
 - Always execute nix commands in each subproject's root directory.
@@ -229,9 +243,15 @@
   Convert with `SBS.fromShort . byteArrayToShortByteString` (from mempack's `Data.MemPack.Buffer`, requires a `mempack` build-dep) - same as cardano-api's `Cardano.Api.Certificate.Internal` does.
 
 # Consensus genesis gotchas
+- **The full uncompacted genesis DOES survive node startup - in cardano-node's `runP`, not in consensus.**
+  `mkSomeConsensusProtocolCardano` embeds the full `ShelleyGenesis` (plus Alonzo/Conway/Dijkstra genesis) in the `TransitionConfig` inside `CardanoProtocolParams`, wrapped as `SomeConsensusProtocol`/`ProtocolInfoArgsCardano`; Run.hs threads that value (`runP`) into `handleSimpleNode`, whose scope covers the whole node lifetime including the `rnNodeKernelHook` lambda.
+  Compaction (`compactGenesis`, erasing `sgInitialFunds`/`sgStaking`) happens afresh inside every `Api.protocolInfo runP` call when it builds a `TopLevelConfig` - `runP` itself stays pristine, so code at the hook site can take the genesis from `runP` instead of re-reading the file.
+  The Shelley `GenesisHash` itself is no longer unrecoverable either: `readGenesisAny` computes it at boot (folding it into the Praos initial nonce via `genesisHashToPraosNonce` as before), and that same hash is now returned from `mkConsensusProtocol`/`mkSomeConsensusProtocolCardano` as a plain `GenesisHashShelley` alongside `SomeConsensusProtocol` (a tuple - the `SomeConsensusProtocol` constructor keeps its upstream 2-field shape), threaded through `Run.hs` into cardano-rpc; the other eras' hashes are still bound to `_`-names and discarded.
 - **The in-memory `ShelleyGenesis` from `TopLevelConfig` has `sgInitialFunds` and `sgStaking` erased**: `ShelleyLedgerConfig` stores only a `CompactGenesis` (`Ouroboros.Consensus.Shelley.Ledger.Config`), whose `compactGenesis` wipes exactly those two fields, and `shelleyLedgerGenesis` unwraps that compacted value.
   Recover them from the on-disk genesis JSON: `"initialFunds"` is a mandatory `FromJSON` key, `"staking"` is optional (defaults to `emptyGenesisStaking`); mainnet and the testnet template have both empty/absent anyway - only custom networks (e.g. cardano-testnet) populate them.
-  Shelley/Alonzo/Conway genesis HASHES are likewise not recoverable from `TopLevelConfig` - hash the raw file bytes with Blake2b-256, as `Cardano.Node.Protocol.Shelley.readGenesis` does at startup; the file paths live in cardano-node's `NodeConfiguration` (`ncProtocolConfig` -> `npc*GenesisFile`).
+  The Shelley genesis HASH is no longer in that boat: `mkConsensusProtocol`/`mkSomeConsensusProtocolCardano` now return it as a plain `GenesisHashShelley` in a tuple alongside `SomeConsensusProtocol`, set at boot time from the hash `Cardano.Node.Protocol.Shelley.readGenesis` already computes, and `Run.hs` threads it into cardano-rpc.
+  There is no `Maybe` and no extra constructor field: only the Cardano protocol has a boot-time hash to return, the Byron-only and Shelley-standalone protocols never reach a cardano-rpc `GenesisBundle` at all, so the optionality is gone end-to-end.
+  Alonzo/Conway genesis HASHES are still not recoverable from `TopLevelConfig` - hash the raw file bytes with Blake2b-256, as `Cardano.Node.Protocol.Shelley.readGenesis` does at startup; the file paths live in cardano-node's `NodeConfiguration` (`ncProtocolConfig` -> `npc*GenesisFile`).
 
 # Ledger native script gotchas
 - **The native-script view patterns (`RequireSignature`, `RequireAllOf`, ..., `RequireTimeStart`) have era-indexed `COMPLETE` pragmas** for Shelley through Conway (none for Dijkstra, checked cardano-ledger-dijkstra 0.2.0.1).
@@ -270,3 +290,27 @@
 - **A service's generated `type ServiceMethods` list (`gen/Proto/.../<Service>.hs`) is sorted ALPHABETICALLY by method name, not in `.proto` declaration order** - but the `Methods`/`Method` chain built in `Server.hs` (e.g. `methodsUtxoRpc`, `methodsSyncRpc`) must be in `ServiceMethods` order, since grapesy resolves handlers positionally against that type-level list.
   Concretely: `QueryService`'s methods are declared `ReadParams, ReadUtxos, SearchUtxos, ReadGenesis` in `query.proto`, but proto-lens emits `ServiceMethods QueryService = '["readGenesis", "readParams", "readUtxos", "searchUtxos"]` (readGenesis sorts first, 'g' < 'p') - so `methodsUtxoRpc` in `Server.hs` must list the `readGenesis` handler FIRST, even though it is the last RPC added to the proto file.
   Always grep the regenerated module for `type ServiceMethods <Service>` and read off the literal list order after every proto change that adds/removes/renames a method; never assume it matches declaration order (existing precedent: the `methodsSyncRpc` haddock already documents this for `SyncService` - `dumpHistory, fetchBlock, followTip, readTip`, also alphabetical).
+
+# proto-lens genesis / cardano-rpc field-mapping gotchas
+- **Names hidden from the `U5c` (`Cardano.Rpc.Proto.Api.UtxoRpc.Query`) re-export are still reachable as bare qualified lenses - no `OverloadedLabels` needed.**
+  `Cardano.Rpc.Proto.Api.UtxoRpc.Query` imports `...Cardano.Cardano_Fields hiding (hash, height, index, items, key, slot, timestamp, tx, values, ...)`, but every one of those names is ALSO defined (polymorphically, via `HasField`) in `...Query.Query_Fields`, which is NOT hidden.
+  So `U5c.values`/`U5c.hash` resolve to the `Query_Fields` lens and work on ANY message that has a `values`/`hash` field (e.g. `CostModel`, `Constitution`) - proven by existing use in `Type/ProtocolParameters.hs` (`U5c.values`) and `Type/Certificate.hs` (`U5c.hash`).
+  Do not reach for `#values`/`#hash` OverloadedLabels; the plain `U5c.name` form is correct and matches the rest of cardano-rpc.
+- **`CostModelMap` (the `Genesis` message's `cost_models`) and `CostModels` (the `PParams` message's) are DISTINCT generated proto types with identical shape.**
+  Both have `plutusV1..plutusV4 :: CostModel` and `CostModel` has `values :: [Int64]`, but a helper typed for one will not fit the other - build each with its own `defMessage`.
+- **proto-lens `map<K,V>` fields are plain `Data.Map.Map K V` set directly with `.~` - there is no `Maybe` and no per-entry key/value message.**
+  Build the whole map with `Map.fromList` and set it in one go (e.g. `U5c.genDelegs .~ Map.fromList [...]`); the generated `Genesis'FooEntry` types are internal and never constructed by hand.
+- **Projecting per-era genesis out of a `TransitionConfig LatestKnownEra` (= Dijkstra) needs exact `tcPreviousEraConfigL` hop counts.**
+  Shelley from any era: `^. tcShelleyGenesisL`. Conway: `^. tcPreviousEraConfigL . tcTranslationContextL` (one hop, Dijkstra to Conway). Alonzo: THREE `tcPreviousEraConfigL` hops (Dijkstra to Conway to Babbage to Alonzo) then `tcTranslationContextL`. All three from `Cardano.Ledger.Api.Transition`; they reduce at the concrete era with no type applications.
+- **Byron `unLovelacePortion` and `lovelacePortionDenominator` are NOT exported** (only the abstract `LovelacePortion` type, `rationalToLovelacePortion` and `lovelacePortionToRational` are, from `Cardano.Chain.Common`).
+  The Byron genesis JSON emits a `LovelacePortion` as its raw `Word64` numerator over a fixed 1e15 denominator, so recover it with `round (lovelacePortionToRational x * 1e15) :: Word64`.
+- **Faithful Byron genesis rendering uses the ledger's own canonical-JSON formatters, which live in `Cardano.Crypto`/`Cardano.Chain.Common` and need a `formatting` build-dep** (`sformat`).
+  Key hash -> hex: `sformat hashHexF . unKeyHash`; verification key -> base64: `fullVerificationKeyF`; signature -> base16: `fullSignatureHexF`; address -> base58: `addressF`; AVVM redeem key -> base64url: `redeemVKB64UrlF . fromCompactRedeemVerificationKey`.
+  These match the on-disk genesis because they ARE what the ledger's `Text.JSON.Canonical` instances call; the aeson `ToJSON` instances on the same Byron types are "for debugging only" and must not be used as the reference.
+- **`ppMinFeeAL`/`ppMinFeeBL` are deprecated** (`-Wdeprecations`, fatal under cardano-api's `-Werror`) in favour of `ppTxFeePerByteL`/`ppTxFeeFixedL`.
+  Note the types differ: `ppTxFeePerByteL :: Lens' (PParams era) CoinPerByte` (and `CoinPerByte` wraps `CompactForm Coin`, so unwrap with `fromCompact . unCoinPerByte`), whereas `ppTxFeeFixedL :: Lens' (PParams era) Coin` (plain). Both are era-generic `EraPParams` methods, so they read a `PParams ShelleyEra` without needing `ConwayEraPParams`.
+- **The `NominalDiffTimeMicro` (Shelley `sgSlotLength`) converter is `fromNominalDiffTimeMicro :: NominalDiffTimeMicro -> NominalDiffTime`, exported from `Cardano.Ledger.Shelley.Genesis`** (there is no `nominalDiffTimeMicroToSeconds`).
+  For slot length in milliseconds: `round (1000 * fromNominalDiffTimeMicro sgSlotLength)` (mainnet's 1 s yields 1000).
+- **RIO does not re-export `?~`** (its whole lens surface is `view`/`preview`/`^.`/`^?`/`^..`/`%~`/`.~` plus the types - checked `RIO.Prelude.Lens`), so hlint's "Use ?~" hint on `maybe'foo .~ Just x` setters cannot be satisfied from RIO alone.
+  The fix is NOT an HLINT ignore: `microlens` is already in the build plan (RIO depends on it, and RIO's own operators are microlens re-exports, so it composes with the same proto-lens lenses).
+  Add `microlens` to build-depends and `import Lens.Micro ((?~))`.

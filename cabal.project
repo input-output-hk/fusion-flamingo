@@ -31,10 +31,10 @@ packages:
   cardano-node/bench/tx-generator
   cardano-node/bench/cardano-timeseries-io
 
-  cardano-api/cardano-api/*.cabal
-  cardano-api/cardano-api-gen/*.cabal
-  cardano-api/cardano-wasm/*.cabal
-  cardano-api/cardano-rpc/*.cabal
+  -- cardano-api/cardano-api/*.cabal
+  -- cardano-api/cardano-api-gen/*.cabal
+  -- cardano-api/cardano-wasm/*.cabal
+  -- cardano-api/cardano-rpc/*.cabal
 
   -- cardano-cli/*/*.cabal
 
