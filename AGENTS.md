@@ -244,6 +244,7 @@
   `bench/trace-schemas/newNamespaces.txt` is a checked-in generated snapshot of all namespaces, but it is already stale and no CI workflow regenerates or validates it.
 - Every `MetaTrace`/`LogFormatting` clause list in `Cardano/Node/Tracing/Tracers/*.hs` is hand-maintained.
   A new trace constructor needs adding to `forMachine`, `namespaceFor`, `severityFor`, `documentFor`, `allNamespaces` and (where relevant) `asMetrics`/`metricsDocFor` - GHC only catches the first two, the rest silently fall through to their `_ -> Nothing` / `_ -> []` default.
+- **New `TraceRpcSubmit` constructors in cardano-rpc REQUIRE updating cardano-node's `Cardano/Node/Tracing/Tracers/Rpc.hs` in the same change** - the hand-maintained `LogFormatting`/`MetaTrace` instances there hit a non-exhaustive case at runtime otherwise, and the resulting `PatternMatchFail` is caught by the RPC server's top-level handler and surfaced to gRPC clients as an opaque `GrpcUnknown "Internal error while processing the request."` on the affected method (observed 2026-09-07: the ReadMempool E2E failed on every call because the three new mempool span constructors were missing from Rpc.hs; the node log only reveals the real exception at `["Error"]` severity Notice or above, default Debug hides it).
 
 # cardano-api experimental API gotchas
 - `Cardano.Api.Experimental` does NOT re-export `AnyScriptWitness`/`AnyScriptWitnessSimple`.
