@@ -94,6 +94,11 @@
   A repo-wide grep or file search can land in e.g. `/work/cardano-node/dist-newstyle/tmp/src-33347/cardano-api-11.3.0.0/`, which is the pinned RELEASE of cardano-api, not the live `/work/cardano-api` checkout - analysis based on it silently describes outdated code (observed 2026-08-13: an agent answered a duplication question from the tarball copy).
   Search from inside the intended subproject and treat any path containing `dist-newstyle` as build output, never as source of truth.
 
+- **agentix `get_file` reconstructions can silently drop chunks, including the module header/export list** (observed 2026-09-07 on chap::cardano-ledger-conway-1.23.0.0's `Cardano/Ledger/Conway/UTxO.hs`: the reconstructed file started mid-module, no `module ... (...) where`).
+  Never answer "is X exported" from an agentix-reconstructed file; use the haskdogs cache or the release tarball as ground truth.
+- **CHaP package tarballs live at the foliage URL `https://chap.intersectmbo.org/package/<pkg>-<ver>.tar.gz`** - the Hackage-style path `/package/<pkg>-<ver>/<pkg>-<ver>.tar.gz` returns an HTML page, not a tarball.
+  Useful for checking a pinned version's exact source (e.g. export lists) when haskdogs has a different version indexed.
+
 # Dependency version skew gotchas
 - **The `/work/cardano-ledger` (and other sibling) checkouts can be NEWER than the versions pinned by the metarepo's cabal.project index-state.**
   API details read from those checkouts (constructor names, signatures, pragmas) may not exist in the pinned build - e.g. `AlonzoScript`'s `TimelockScript` constructor is `NativeScript` at the pinned cardano-ledger-alonzo 1.15.0.1, renamed later upstream.
@@ -381,6 +386,9 @@
   To assert a streaming RPC fails before yielding anything, bypass `serverStreaming`/`clientHandler` helpers and drive the call directly: `Rpc.withRPC conn def (Proxy @(Rpc.Protobuf Service "method")) $ \call -> Rpc.sendFinalInput call request >> Rpc.recvOutput call` - `recvOutput` raises `GrpcException` on a non-OK terminal status even when zero messages were sent.
   All these (`withRPC`, `sendFinalInput`, `recvOutput`) are already re-exported by `Cardano.Rpc.Client` via `Network.GRPC.Client`, no extra import needed.
   See `followTipExpectingError` in cardano-node's `Cardano.Testnet.Test.Rpc.FollowTip`.
+- **A grapesy server-streaming HANDLER that returns normally must send the terminal `NoNextElem` (`NoMoreElems`) marker first** - otherwise the HTTP2 stream is cancelled instead of closed with proper trailers (verified against grapesy's Server/Call.hs, 2026-09-07).
+  There was no in-tree precedent before cardano-rpc's `waitForTxStream`: `followTipStream` never returns normally, so the requirement never surfaced.
+  Unit-test the exact final element (see `hprop_wait_for_tx_stream_*` in cardano-rpc's `Test.Cardano.Rpc.WaitForTxStream`).
 
 # http2 / time-manager server gotchas (verified against http2-5.3.9, time-manager-0.3.2, http2-tls-0.4.9 sources, 2026-08-31)
 - **Passing a live (positive-timeout) `confTimeoutManager` to http2's server `run` kills server-streaming handlers that go quiet between chunks.**
