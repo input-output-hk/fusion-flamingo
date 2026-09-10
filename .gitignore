@@ -28,3 +28,6 @@
 !.serena/
 !.serena/**
 
+
+!crpc-campaign/
+!crpc-campaign/**

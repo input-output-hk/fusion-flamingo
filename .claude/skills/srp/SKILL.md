@@ -52,4 +52,5 @@ Update with: `nix flake lock <flake-dir> --update-input <hackage-input> --update
 - NEVER omit the `--sha256:` line. Nix requires it for reproducible fetching.
 - Use SRI format (`sha256-...=`) not base32 nix format.
 - The `--sha256:` line is a cabal comment (starts with `--`) that nix's haskell.nix reads.
-- Keep SSH URLs as SSH, HTTPS as HTTPS - match what the user provides or what the remote already uses.
+- Always write `https://github.com/...` in the stanza location, even when the local remote is SSH - CI cannot fetch SSH.
+  SSH may only be used for the hash computation fetch if https fails locally.

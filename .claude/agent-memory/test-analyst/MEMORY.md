@@ -1,0 +1,2 @@
+- [RPC HTTP gRPC banner bug](project_rpc_http_grpc_banner_bug.md) — standalone `cardano-testnet cardano` gRPC endpoint banner; was dead code, fixed and verified 2026-09-09
+- [Standalone cardano-testnet run gotchas](project_cardano_testnet_standalone_run_gotchas.md) — CARDANO_CLI/CARDANO_NODE env vars, AF_UNIX path limit, orphaned nodes on crash, probe checks connectivity not identity

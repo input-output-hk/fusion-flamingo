@@ -47,6 +47,10 @@ paths:
 - **Never use `putStrLn`** in library code - use `Data.Text.IO.hPutStrLn stdout` for `Text` output.
 - In Hedgehog tests, use `H.nothingFail` from hedgehog-extras instead of `case ... Nothing -> H.failure; Just x -> do`.
   Import convention: `import Hedgehog as H` + `import Hedgehog.Extras qualified as H`.
+- In Hedgehog tests, write `===` unqualified (import it from Hedgehog), never `H.===`.
+- Never use haddock markers (`-- |`, which fourmolu escapes to `-- \|`) on `where`-bound or other local definitions - plain `--` comments only; haddock belongs on top-level declarations.
+- Never reference design docs in code (`docs/` paths, `*.md` file names, AC numbers, ADR numbers) in comments or haddocks.
+  Restate the relevant fact inline instead - design docs move and rot independently of the code.
 - In Hedgehog tests, use `H.leftFail` / `H.leftFailM` from hedgehog-extras instead of `case ... Left err -> H.annotateShow err >> H.failure; Right x -> do`.
   Only applies to success cases where any `Left` is unexpected; keep the explicit `case` when specific `Left` patterns are valid outcomes.
 - In Hedgehog tests, never use `H.assert` - always use `H.assertWith` from hedgehog-extras.

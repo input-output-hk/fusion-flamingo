@@ -11,8 +11,8 @@ repository cardano-haskell-packages
     d4a35cd3121aa00d18544bb0ac01c3e1691d618f462c46129271bccf39f7e8ee
 
 index-state:
-  , hackage.haskell.org 2026-07-01T00:33:51Z
-  , cardano-haskell-packages 2026-06-29T12:05:19Z
+  , hackage.haskell.org 2026-08-14T13:38:07Z
+  , cardano-haskell-packages 2026-09-04T09:27:20Z
 
 packages:
   -- adawallet/*/*.cabal
@@ -131,44 +131,22 @@ package cardano-crypto-praos
 
 if impl(ghc >= 9.12)
   allow-newer:
-    -- we need newer io-classes: https://github.com/input-output-hk/typed-protocols/tree/coot/io-classes-1.9
     , io-classes:time
-    , ouroboros-network:time
-    , nothunks:time
-    , network-mux:time
-    , cardano-ping:time
+    , io-sim:time
 
-if impl(ghc >= 9.12)
-  allow-newer:
-    -- , base
-    -- , ghc-prim
-
-    -- https://github.com/phadej/vec/issues/121
-    , ral:QuickCheck
-    , fin:QuickCheck
-    , bin:QuickCheck
-
-    -- , ekg-json:base
-    -- , ekg-wai:time
-    -- , plutus-ledger-api
-    -- , cardano-api
-    -- , cardano-cli
-
-    -- , hedgehog-extras
-
--- Needed for all ghc versions due to added aeson >= 2.3 bound.
-allow-newer:
-  , cborg-json:aeson
-  , criterion-measurement:aeson
-  , deriving-aeson:aeson
-  , ekg-json:aeson
-  , grapesy:aeson
-  , grpc-spec:aeson
-  , hedgehog-extras:aeson
-  , microstache:aeson
-  , vary:aeson
-  , monad-control:transformers
-  , http-api-data:text-iso8601
+-- -- Needed for all ghc versions due to added aeson >= 2.3 bound.
+-- allow-newer:
+--   , cborg-json:aeson
+--   , criterion-measurement:aeson
+--   , deriving-aeson:aeson
+--   , ekg-json:aeson
+--   , grapesy:aeson
+--   , grpc-spec:aeson
+--   , hedgehog-extras:aeson
+--   , microstache:aeson
+--   , vary:aeson
+--   , monad-control:transformers
+--   , http-api-data:text-iso8601
 
 extra-packages: Cabal
 
