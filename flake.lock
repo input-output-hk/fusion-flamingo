@@ -3,11 +3,11 @@
     "CHaP": {
       "flake": false,
       "locked": {
-        "lastModified": 1786489982,
-        "narHash": "sha256-T0r6CvdSEDxszlb7uK7mxEVZcCtFNbk8tlr8B1bRKqM=",
+        "lastModified": 1788439818,
+        "narHash": "sha256-+sjKSr1tFhiLrxhplOOToCjXMyWZV4ZbvYOdkqwHzBg=",
         "owner": "intersectmbo",
         "repo": "cardano-haskell-packages",
-        "rev": "13d0f23cf6af9ea55194b91f6947c0a2aeb522d9",
+        "rev": "95889113a879bc92976bba48cf743bd78f99710f",
         "type": "github"
       },
       "original": {
@@ -173,17 +173,17 @@
         ]
       },
       "locked": {
-        "lastModified": 1787745312,
-        "narHash": "sha256-d/LTZUfbLMrxoQ5eDd6kR/693oBKbVEtWESNA39u2Kc=",
-        "ref": "refs/heads/mgalazyn/fix/experimental-redeemer-pointer-indexing",
-        "rev": "e769c70d8ba3f0da441c93da95f311cb5339bc82",
-        "revCount": 323,
-        "type": "git",
-        "url": "file:./cardano-api"
+        "lastModified": 1788877584,
+        "narHash": "sha256-/CqeidDADD4oMIRLXIB0NCBJUpP+gghOc++w/gCR33Q=",
+        "owner": "intersectmbo",
+        "repo": "cardano-api",
+        "rev": "81a2c40d983950296a4f51e923cc9911e1ba3d30",
+        "type": "github"
       },
       "original": {
-        "type": "git",
-        "url": "file:./cardano-api"
+        "owner": "intersectmbo",
+        "repo": "cardano-api",
+        "type": "github"
       }
     },
     "cardano-dev": {

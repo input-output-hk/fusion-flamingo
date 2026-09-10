@@ -2,7 +2,7 @@
   description = "Cardano development shell";
 
   inputs = {
-    cardano-api.url = "git+file:./cardano-api";
+    cardano-api.url = "github:intersectmbo/cardano-api";
     haskdogs-src = {
       url = "github:carbolymer/haskdogs/feature/read-dump";
       flake = false;
