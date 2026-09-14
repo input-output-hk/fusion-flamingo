@@ -42,6 +42,8 @@ paths:
 
 # Haskell style
 - Use readable value names, not acronyms: `shelleyBasedEra` not `sbe`, `policy` not `pid`, `network` not `nw`, `credential` not `cred`, `address` not `addr`, `value` not `val`, `tokenName` not `aname`, `quantity` not `qty`.
+- Always use `GHC.Exts`' `IsList` methods (`fromList`/`toList`) instead of specialised variants (`Map.fromList`, `Set.fromList`, `Map.toList`, ...) whenever possible.
+  Exception: don't use them on list comprehensions.
 - Conversion helpers take plain values, never `Maybe`/`StrictMaybe`.
   Handle optionality at the call site with `fmap`/`strictMaybe`; a helper that absorbs a `Maybe` hides the default and breeds near-duplicate variants.
 - **Never use `putStrLn`** in library code - use `Data.Text.IO.hPutStrLn stdout` for `Text` output.
