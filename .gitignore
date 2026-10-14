@@ -19,6 +19,7 @@
 !hie.yaml
 !CODEOWNERS
 !haskdogs-dirs.txt
+!agentix-dirs.txt
 !inotifywait.sh
 !regenerate-tags.sh
 !AGENTS.md

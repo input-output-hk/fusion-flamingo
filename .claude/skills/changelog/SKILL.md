@@ -6,6 +6,8 @@ argument-hint: "[project] [description]"
 
 Write a herald changelog fragment for the current branch.
 
+Before writing or editing a fragment, read `.claude/knowledge/herald/README.md` (path relative to the /work repo root): it holds the fragment rules (user-facing release notes, one new fragment per PR, valid `kinds` from the target repo's `.herald.yml`).
+
 Arguments: $ARGUMENTS
 
 ## Procedure

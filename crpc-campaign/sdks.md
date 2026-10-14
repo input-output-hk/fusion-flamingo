@@ -5,9 +5,10 @@ Method status in [cardano-rpc-status.md](cardano-rpc-status.md).
 
 Correction (2026-09-09, found by live testing): the published providers do NOT work against cardano-rpc at all today.
 Both are pinned to `@utxorpc/sdk` 0.6.x, which speaks the `utxorpc.v1alpha.*` services, while cardano-rpc implements `v1beta` only; every call fails with UNIMPLEMENTED, and some v1beta message shapes differ (e.g. ex-unit prices are a `RationalNumber`, not a plain number).
-The method-level analysis below still holds once the SDKs move to v1beta; until then the practical path is a small hand-rolled v1beta provider (verified working example in [quickstart-draft.md](quickstart-draft.md), including a real transaction built and submitted with MeshJS wallet and tx-builder against cardano-rpc).
+The method-level analysis below still holds once the SDKs move to v1beta; until then the practical path is a small hand-rolled v1beta provider (verified working example now lives in-repo under `cardano-rpc/quickstart/`, shipped on cardano-api master; it includes a real transaction built and submitted with MeshJS wallet and tx-builder against cardano-rpc).
 Root cause is upstream in utxorpc/spec, not in the SDK consumers: `@utxorpc/spec` 0.19.2 ships the generated v1beta sources in its tarball, but the package barrel exports v1alpha only, so v1beta is unreachable from the published package; `@utxorpc/sdk` 0.9.0 (2026-08-27) is just a dependency bump on top of that.
-The fix is draft PR utxorpc/spec#209 (per-version barrels, Santiago Carmuega, opened 2026-08-17) with Mateusz's #208 stacked on it; once merged and released, MeshJS and Evolution need only routine dependency bumps, so no issues should be filed against them.
+The fix is utxorpc/spec#209 (per-version barrels, Santiago Carmuega), MERGED 2026-09-14 but not yet released; Mateusz's stacked #208 was closed unmerged (checked 2026-09-17).
+Once #209 is released, MeshJS and Evolution need only routine dependency bumps, so no issues should be filed against them.
 Once the SDKs reach v1beta, the shared blocker becomes `WaitForTx`.
 
 ## MeshJS

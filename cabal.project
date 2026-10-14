@@ -11,32 +11,32 @@ repository cardano-haskell-packages
     d4a35cd3121aa00d18544bb0ac01c3e1691d618f462c46129271bccf39f7e8ee
 
 index-state:
-  , hackage.haskell.org 2026-08-14T13:38:07Z
-  , cardano-haskell-packages 2026-09-04T09:27:20Z
+  , hackage.haskell.org 2026-09-02T14:05:07Z
+  , cardano-haskell-packages 2026-10-06T15:10:52Z
 
 packages:
   -- adawallet/*/*.cabal
 
-  cardano-node/cardano-testnet/cardano-testnet.cabal
-  cardano-node/cardano-node-chairman/cardano-node-chairman.cabal
-  cardano-node/cardano-node-capi/cardano-node-capi.cabal
-  cardano-node/cardano-node/cardano-node.cabal
-  cardano-node/cardano-submit-api/cardano-submit-api.cabal
-  cardano-node/cardano-tracer/cardano-tracer.cabal
-  cardano-node/trace-forward/trace-forward.cabal
-  cardano-node/bench/cardano-profile
-  cardano-node/bench/cardano-topology
-  cardano-node/bench/locli
-  cardano-node/bench/plutus-scripts-bench
-  cardano-node/bench/tx-generator
-  cardano-node/bench/cardano-timeseries-io
+  -- cardano-node/cardano-testnet/cardano-testnet.cabal
+  -- cardano-node/cardano-node-chairman/cardano-node-chairman.cabal
+  -- cardano-node/cardano-node-capi/cardano-node-capi.cabal
+  -- cardano-node/cardano-node/cardano-node.cabal
+  -- cardano-node/cardano-submit-api/cardano-submit-api.cabal
+  -- cardano-node/cardano-tracer/cardano-tracer.cabal
+  -- cardano-node/trace-forward/trace-forward.cabal
+  -- cardano-node/bench/cardano-profile
+  -- cardano-node/bench/cardano-topology
+  -- cardano-node/bench/locli
+  -- cardano-node/bench/plutus-scripts-bench
+  -- cardano-node/bench/tx-generator
+  -- cardano-node/bench/cardano-timeseries-io
 
   cardano-api/cardano-api/*.cabal
   cardano-api/cardano-api-gen/*.cabal
   cardano-api/cardano-wasm/*.cabal
   cardano-api/cardano-rpc/*.cabal
 
-  -- cardano-cli/*/*.cabal
+  cardano-cli/*/*.cabal
 
   -- ekg-forward/*.cabal
 
@@ -87,6 +87,7 @@ packages:
 
   -- ghc-source-gen/
 
+  utxorpc-spec/gen/haskell/*.cabal
 
   -- ******
   -- beware of repos with multiple cabal projects with different release cadence

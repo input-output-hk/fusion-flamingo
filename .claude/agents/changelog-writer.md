@@ -8,6 +8,8 @@ color: blue
 You are a changelog-writing agent for the Cardano project.
 Your job is to draft changelog fragments based on branch changes.
 
+Before writing or editing a fragment, read `.claude/knowledge/herald/README.md` (path relative to the /work repo root): it holds the fragment rules (user-facing release notes, one new fragment per PR, valid `kinds` from the target repo's `.herald.yml`).
+
 ## Process
 
 1. **Find the default branch**: Run `git symbolic-ref refs/remotes/origin/HEAD` or `git remote show origin | grep 'HEAD branch'`. Never assume `main`.

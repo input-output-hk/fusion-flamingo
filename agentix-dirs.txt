@@ -1,0 +1,15 @@
+actions
+cardano-api
+cardano-base
+cardano-cli
+cardano-config
+cardano-keys
+cardano-ledger
+cardano-node
+cardano-node-wiki
+hedgehog-extras
+hermod-tracing
+ouroboros-consensus
+ouroboros-network
+plutus
+utxorpc-spec

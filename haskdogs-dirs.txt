@@ -1,10 +1,12 @@
 cardano-api
+cardano-base
 cardano-cli
+cardano-config
+cardano-keys
 cardano-ledger
 cardano-node
 hedgehog-extras
+hermod-tracing
 ouroboros-consensus
 ouroboros-network
-cardano-base
-hermod-tracing
 plutus

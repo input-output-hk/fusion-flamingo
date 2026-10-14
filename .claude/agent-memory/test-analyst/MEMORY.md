@@ -1,2 +1,4 @@
 - [RPC HTTP gRPC banner bug](project_rpc_http_grpc_banner_bug.md) — standalone `cardano-testnet cardano` gRPC endpoint banner; was dead code, fixed and verified 2026-09-09
 - [Standalone cardano-testnet run gotchas](project_cardano_testnet_standalone_run_gotchas.md) — CARDANO_CLI/CARDANO_NODE env vars, AF_UNIX path limit, orphaned nodes on crash, probe checks connectivity not identity
+- [PR #6693 manifest test round](project_manifest_pr6693_test_round.md) — Windows pipe-path test, stale-manifest test, readJsonFileOk adoption; 3 findings reported 2026-09-24
+- [PR #6710 EnableTracer test review](project_enable_tracer_pr6710_test_review.md) — test doesn't probe Prometheus (port unreachable from test); HTTP-assert pattern; cleanup-chain via initiateProcess+runFinallies

@@ -1,6 +1,6 @@
 ---
 name: regenerate-tags
-description: Regenerate the agent-tags ctags file by pulling latest default branches and running haskdogs.
+description: Regenerate the agent-tags ctags file by running haskdogs over the repos in haskdogs-dirs.txt as they are checked out.
 ---
 
 Regenerate `/work/agent-tags` so symbol lookups stay current.
@@ -9,7 +9,7 @@ Regenerate `/work/agent-tags` so symbol lookups stay current.
 
 1. Run the script from `/work`:
    ```
-   bash /work/regenerate-tags.sh agent-tags
+   bash /work/haskdogs-regenerate-tags.sh agent-tags
    ```
    Use a 5-minute timeout (300000ms).
 
@@ -18,19 +18,16 @@ Regenerate `/work/agent-tags` so symbol lookups stay current.
    ls -lh /work/agent-tags
    ```
 
-3. Report the result: file size and whether it succeeded or failed.
+3. Report the result: file size, whether it succeeded or failed, and every repo the script printed on a branch other than `master`.
 
 ## What the script does
 
-- Saves the current branch in each repo listed in `/work/haskdogs-dirs.txt`.
-- Checks out the default branch (from `origin/HEAD`) and pulls.
-- Runs `haskdogs` to generate a tags file from all repos.
-- Renames the output to `agent-tags`.
-- Restores all repos to their original branches.
-- Backs up and restores any pre-existing `tags` file.
+- Prints the current branch and commit of each repo listed in `/work/haskdogs-dirs.txt`.
+- Runs `haskdogs` over those repos as they are checked out; it never switches branches or pulls.
+- Renames the output to `agent-tags`, keeping any pre-existing `tags` file.
 
 ## Notes
 
-- The script requires `parallel`, `haskdogs`, and `hasktags` in PATH (all provided by the devshell).
-- SSH access to GitHub is required for `git pull` to work.
-- If pulls fail due to SSH issues, the tags are still generated from the local state.
+- The script requires `haskdogs` and `hasktags` in PATH (both provided by the devshell).
+- For tags of the latest upstream default branches, run `/work/haskdogs-reset-to-master.sh` on the host first.
+  Its `git fetch` fails in the sandbox (no git over SSH there).
