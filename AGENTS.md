@@ -53,6 +53,8 @@
   Working targets for cardano-api: `packages.x86_64-linux."cardano-api:lib:cardano-api"`, `"cardano-api:lib:gen"`, `"cardano-api:test:cardano-api-test"`, `"cardano-api:test:cardano-api-golden"`, and `checks.x86_64-linux."cardano-api:test:<suite>"` to run a suite; pass `--accept-flake-config --allow-import-from-derivation`.
 - **`nix flake update|metadata` fails in `/work/cardano-node` and its worktrees with "unsupported extension name extensions.relativeworktrees"** (the checkout's `.git/config` sets `extensions.relativeWorktrees`, which nix's libgit2 does not know; observed 2026-10-06, cardano-cli verified unaffected).
   Work around it with the path form, e.g. `nix flake update cardano-dev --accept-flake-config --flake 'path:/work/cardano-node/@worktree/<name>'`, which skips libgit2 for the top-level flake.
+- **Commits, rebases and amends in `/work/cardano-cli` fail with "empty ident name"**: its `.git/config` sets only `user.email`, and there is no global `user.name` (only `/work/.git/config` has one; observed 2026-10-14).
+  Pass the name per command (`GIT_COMMITTER_NAME="Mateusz Galazyn"`, plus `GIT_AUTHOR_NAME` for new commits); never edit git config.
 
 # Tool preferences for code navigation
 - **`grep` is aliased to `ugrep --ignore-files`, and `/work/.gitignore` ignores subproject directories (e.g. `cardano-api`)** - a recursive search run from `/work` silently returns NOTHING for files under those subprojects, even though they exist.
@@ -65,6 +67,7 @@
 - **Serena diagnostics go stale after out-of-band edits.**
   Serena's language server opens files once and never sees changes made on disk by other tools (Edit/Write), so `get_diagnostics_for_file` keeps reporting the old snapshot - `touch`, symbol lookups and project re-activation do NOT refresh it.
   Edit Haskell files through Serena's own tools (`replace_in_files`, `replace_symbol_body`) so the server gets change notifications.
+- **Activate Serena on `/work`, never on a subproject** - activating `/work/cardano-cli` writes an untracked `.serena/` into that checkout (observed 2026-10-14).
 
 - **agentix `get_file` reconstructions can silently drop chunks, including the module header/export list** (observed 2026-09-07 on chap::cardano-ledger-conway-1.23.0.0's `Cardano/Ledger/Conway/UTxO.hs`: the reconstructed file started mid-module, no `module ... (...) where`).
   Never answer "is X exported" from an agentix-reconstructed file; use the haskdogs cache or the release tarball as ground truth.
@@ -79,6 +82,10 @@
   Check-runs are pinned per commit SHA to a specific Hydra build attempt: a red required check on a tag stays red forever until someone RESTARTS those Hydra builds for that exact SHA (master later going green never propagates back).
   Hydra per-job history and raw logs are at `https://ci.iog.io` (`/build/<id>`, raw log at `/build/<id>/nixlog/1/raw`), reachable from the sandbox.
 - **Identical git trees can produce different Hydra derivation hashes across evaluations** (floating non-git input, likely IFD cabal-plan resolution), so "same source, different build outcome" needs no code change to explain - mind this before hunting for a fixing commit.
+- **cardano-cli release tags are signed annotated tags since the herald-release bump `978aa19e` (2026-10-06), and the Hydra bridge's tag jobset then evaluates the tag object SHA, so no `ci/hydra-build` check-runs reach the release commit.**
+  `release-upload.yml` polls `commits/<tag>/check-runs` (resolved to the commit), finds nothing, and waits until its 120-minute timeout (observed 2026-10-07 on cardano-cli-11.3.0.0; the lightweight 11.2.x tags were unaffected).
+  Workaround: push any branch at the peeled commit (e.g. `ci/<tag>` at `<tag>^{}`); the bridge's branch jobset then posts the check-runs to the commit.
+  Separately, the gate can pass while a `.required` check is still queued (null conclusions vanish in `$(...)`), so a green Release Upload does not prove that every `.required` check passed.
 - **`cardano-cli --version` reports the git rev of the FLAKE it was built from, so binaries from the usual SPO route (`nix profile install github:IntersectMBO/cardano-node/...`) print cardano-node commits that do not exist in the cardano-cli repo** (observed 2026-09-25 on IntersectMBO/cardano-cli#1442: "cardano-cli 11.1.0.0, git rev 3cc6340a" was cardano-node@3cc6340a).
   Rebuild a reporter's exact binary with `nix build --accept-flake-config github:IntersectMBO/cardano-node/<rev>#hydraJobs.native.cardano-cli` from the scratchpad (Hydra-cached, seconds); and mind that cardano-cli tags without a GitHub Release (11.1.0.0, 11.2.0.0) have no downloadable assets, `gh release download` 404s on them.
 - **To test a cardano-cli commit without building inside the subproject, `nix build --accept-flake-config github:IntersectMBO/cardano-cli/<sha>#cardano-cli` from the scratchpad is Hydra-cached for master commits (seconds, verified 2026-10-02 for both a 2025-05 and a 2025-09 commit)**; the resulting binary prints `git rev 0000000000000000000000000000000000000000`, so record the SHA you built yourself rather than reading it from `--version`.
@@ -109,6 +116,21 @@
 - **`herald validate --diff` fails with "Could not determine fork point - is this branch tracking a remote?" inside a git worktree** (gitdir file), even with `refs/remotes/origin/HEAD` set and upstream tracking configured; the same binary works in the main clone (observed 2026-09-25 in cardano-api/@worktree). The error message is misleading, so do not add upstream tracking to fix it - validate fragments by passing their paths explicitly (`herald -c .herald.yml validate .changes/<file>.yml`) and leave the `--diff --pr` check to CI.
 - **`herald validate` rejects `pr: 0`** (the placeholder `herald init` scaffolds), so a fragment written before its PR exists needs a predicted positive number.
   Issues and PRs share one number space: use the number after the latest issue or PR, and correct it once the PR is opened (observed 2026-10-06 on cardano-dev#48: an agent put the issue's own number in `pr:`).
+
+## Metarepo dependency solve
+- **`/work/cabal.project` builds cardano-node, cardano-api and cardano-cli from the local checkouts, so all three branches must sit on one compatible stack.**
+  cardano-node master lags cardano-api and cardano-cli master by about a release (2026-10-19: node master needs cardano-api `^>=11.7` and cardano-cli `^>=11.2.2`, while cardano-api master is 11.9 and cardano-cli master is 11.4), so rebasing a cardano-api feature branch onto cardano-api master breaks the solve with `cardano-node => cardano-api^>=...`.
+  Base the cardano-api branch on the last cardano-api commit whose own version, cardano-rpc version and consensus/network bounds match cardano-node's `.cabal` files, and check out the matching cardano-cli tag.
+- **CHaP metadata revisions can break an older stack at a newer index-state** (observed 2026-10-19: `cardano-keys-11.0.0.0` revision 1 at 2026-10-02T10:22Z raised its bounds to `cardano-ledger-core ^>=1.22` and `cardano-crypto-class ^>=2.6`, so cardano-api 11.7 no longer solves at CHaP index-state 2026-10-13).
+  Find the revision by listing the package's entries in CHaP's `01-index.tar`; its CHaP PR shows which bounds it raised.
+  Relax every raised bound with `allow-older: <pkg>:<dep>` in `/work/cabal.project` instead of moving the index-state back (cardano-keys needed all five: crypto-class, crypto-wrapper, ledger-core, ledger-shelley, cardano-protocol).
+- **`/installed-<hash>` instances in solver output come from the devshell's haskell.nix `shellFor` package database**, built for the cardano-api flake input pinned in `/work/flake.lock`.
+  They only bias the solver and are not the cause of a conflict; when the local checkouts are on an older stack, cabal builds those dependencies from source instead.
+
+## cardano-node CI checks
+- **cardano-node's stylish-haskell CI pins a prebuilt 0.14.4.0 binary that does not run in this sandbox** (exit 127: UPX-packed, missing libraries), and the nixpkgs version formats differently.
+  To check formatting locally, unpack the pinned binary with upx in the scratchpad and supply the missing libraries from nixpkgs, or leave the check to CI.
+  Local packages build with `-Werror` under nix (`nix/haskell.nix:361`), so a green `path:.` nix build is warning-free.
 
 # cardano-testnet run gotchas
 - **Start ad-hoc `cardano-testnet cardano` runs from a SHORT output directory (e.g. `/tmp/rt-<name>`), never under the session scratchpad.**

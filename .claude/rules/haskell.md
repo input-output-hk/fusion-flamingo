@@ -46,6 +46,7 @@ paths:
   Apply them directly: `provider w $ f x`; this is the one exception to the dots-over-dollars rule.
 - **A constraint-provider wrap used as a bare `do` statement (`maryEraOnwardsConstraints w $ do { ...; unless c $ Left e }`) compiles on GHC 9.12 but fails on GHC 9.10 and older with "Couldn't match type 'a0' with '()' ... 'a0' is untouchable inside the constraints"** (observed 2026-10-06 on cardano-api PR 1366: nix build green on 9.12.4, GHA wasm job on 9.10.3 red).
   Fix the result type from outside the implication: pattern-bind or annotate the constrained expression (`let L.MaryValue c ma = provider w value :: L.MaryValue`) and keep the `unless`/`when` in the outer monad, or wrap the whole function body so the signature fixes the type; CI compiles with several GHC versions, so a passing default nix build is not proof.
+  Same family: `fromEitherIOCli $ shelleyBasedEraConstraints sbe $ readFileTextEnvelope (File f)` compiles on 9.12 but GHC 9.6/9.10 report "Could not deduce Show e0 ... e0 is ambiguous"; pin the error type with `fromEitherIOCli @(FileError TextEnvelopeError)` (precedent `fromEitherIOCli @(FileError ())` in cardano-cli's `Compatible/Governance/Run.hs`; observed 2026-10-16 on cardano-cli PR 1408).
 
 # Haskell style
 - Use readable value names, not acronyms: `shelleyBasedEra` not `sbe`, `policy` not `pid`, `network` not `nw`, `credential` not `cred`, `address` not `addr`, `value` not `val`, `tokenName` not `aname`, `quantity` not `qty`.

@@ -6,4 +6,6 @@ Domain knowledge about `IntersectMBO/cardano-config`, moved out of AGENTS.md.
   Check `git -C /work/cardano-config log -1 origin/main` against upstream, or read upstream with `gh api`, before answering questions about its format or API.
 - **cardano-config 2.x fails on any config without all four `{Byron,Shelley,Alonzo,Conway}GenesisHash` keys, legacy flat files included** (its in-memory `migrate` never computes hashes).
   cardano-node 11.2 (`koslambrou/prepare-11.2`, PR IntersectMBO/cardano-node#6671) still starts on hash-less flat files only because its old POM parser stays authoritative for them and the cardano-config failure is a warning; cardano-testnet `create-env` writes hash-less configs on purpose.
+  This stricter rejection is the intended direction (genesis hashes are becoming mandatory), not a regression to flag in reviews.
+  cardano-testnet fills the hashes in when it starts the node, so `create-env` output is no counterexample (user, 2026-10-19, cardano-cli#1475 review).
 - **Mentions of "cardano-config" in the cardano-api and cardano-cli changelogs and in `Cardano.Api.Internal.Orphans.Serialisation` refer to an unrelated 2021 cardano-node package of the same name**, not to `IntersectMBO/cardano-config`.
