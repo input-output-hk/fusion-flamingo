@@ -126,6 +126,10 @@
   Relax every raised bound with `allow-older: <pkg>:<dep>` in `/work/cabal.project` instead of moving the index-state back (cardano-keys needed all five: crypto-class, crypto-wrapper, ledger-core, ledger-shelley, cardano-protocol).
 - **`/installed-<hash>` instances in solver output come from the devshell's haskell.nix `shellFor` package database**, built for the cardano-api flake input pinned in `/work/flake.lock`.
   They only bias the solver and are not the cause of a conflict; when the local checkouts are on an older stack, cabal builds those dependencies from source instead.
+- **cardano-api master can break its API without bumping its version, so a cardano-cli release tag or cardano-node master may not compile against a cardano-api master commit with the same version label** (observed 2026-10-20: cardano-api master after the 11.7.0.0 release, still labelled 11.7.0.0, removed `caseShelleyToBabbageOrConwayEraOnwards` and moved `HasTextEnvelope` and `getKesPeriod` to cardano-keys, so tag cardano-cli-11.2.3.1 and cardano-node master both failed to compile).
+  Use the newest cardano-cli master commit that still has the matching cardano-api bound, port only the missing hunks from the later upstream commit (cardano-cli `a69c0fa0e` for `unKESPeriod`), and take cardano-node fixes from the open PR that moves node to the next cardano-api (IntersectMBO/cardano-node#6677 for 11.8); keep these as uncommitted local build fixes.
+- **Hackage drift hits unbounded dependencies the same way** (observed 2026-10-20: cardano-rpc at cardano-api `0f98cc7cc` lists `grapesy` with no bound, and the metarepo index-state picked grapesy 1.2.0, whose `serverExceptionToClient` takes `ExactException`).
+  Pin it in `/work/cabal.project` (`constraints: grapesy <1.2`) instead of patching the branch.
 
 ## cardano-node CI checks
 - **cardano-node's stylish-haskell CI pins a prebuilt 0.14.4.0 binary that does not run in this sandbox** (exit 127: UPX-packed, missing libraries), and the nixpkgs version formats differently.

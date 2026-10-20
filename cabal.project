@@ -143,6 +143,9 @@ allow-older:
   , cardano-keys:cardano-ledger-shelley
   , cardano-keys:cardano-protocol
 
+-- cardano-api 0f98cc7cc predates its grapesy 1.2 port (serverExceptionToClient takes ExactException there)
+constraints: grapesy <1.2
+
 -- -- Needed for all ghc versions due to added aeson >= 2.3 bound.
 -- allow-newer:
 --   , cborg-json:aeson
